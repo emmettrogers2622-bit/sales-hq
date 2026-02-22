@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Pitch Builder - Quad Sales HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#08090d;--bg2:#0f1117;--bg3:#161822;--text:#eaedf3;--text2:#8b8fa3;--red:#E31837;--cyan:#00AEEF;--yellow:#FFD100;--green:#10B981;--orange:#F59E0B;--purple:#a855f7;--border:rgba(255,255,255,.06);--glass:rgba(15,17,23,.8);--radius:12px;--radius2:16px}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.6;overflow-x:hidden}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.header h1{font-family:'Playfair Display',serif;font-size:2.5rem;background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-actions{display:flex;gap:12px}
+.btn{padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer;transition:.3s;border:none;font-size:.9rem}
+.btn-primary{background:var(--cyan);color:#000}
+.btn-primary:hover{background:var(--blue);transform:translateY(-1px)}
+.btn-secondary{background:var(--glass);color:var(--text);border:1px solid var(--border)}
+
+/* Main Layout */
+.builder-layout{display:grid;grid-template-columns:400px 1fr;gap:24px;height:calc(100vh - 200px)}
+.builder-panel{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius2);overflow:hidden}
+
+/* Left Panel - Input */
+.input-panel{display:flex;flex-direction:column}
+.panel-header{padding:20px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.panel-title{font-weight:700;margin-bottom:8px}
+.panel-subtitle{font-size:.85rem;color:var(--text2)}
+
+.input-tabs{display:flex;border-bottom:1px solid var(--border)}
+.input-tab{padding:12px 20px;cursor:pointer;font-size:.85rem;font-weight:500;color:var(--text2);transition:.3s;border-bottom:2px solid transparent}
+.input-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+
+.tab-content{padding:20px;flex:1;overflow-y:auto}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-size:.85rem;font-weight:600;margin-bottom:8px;color:var(--text)}
+.form-control{width:100%;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.9rem;font-family:'Inter',sans-serif}
+.form-control:focus{outline:none;border-color:var(--cyan)}
+.form-control.large{min-height:120px;resize:vertical}
+
+.upload-zone{border:2px dashed var(--border);border-radius:8px;padding:40px 20px;text-align:center;cursor:pointer;transition:.3s}
+.upload-zone:hover{border-color:var(--cyan);background:rgba(0,174,239,.05)}
+.upload-zone.dragover{border-color:var(--green);background:rgba(16,185,129,.1)}
+.upload-icon{font-size:2rem;margin-bottom:12px}
+.upload-text{font-weight:600;margin-bottom:4px}
+.upload-subtext{font-size:.8rem;color:var(--text2)}
+
+.template-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.template-card{padding:16px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:.3s}
+.template-card:hover{border-color:var(--cyan)}
+.template-card.selected{border-color:var(--green);background:rgba(16,185,129,.1)}
+.template-name{font-weight:600;margin-bottom:4px}
+.template-desc{font-size:.8rem;color:var(--text2)}
+
+/* Right Panel - Output */
+.output-panel{display:flex;flex-direction:column}
+.output-toolbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.toolbar-left{display:flex;gap:12px}
+.toolbar-btn{padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;font-size:.8rem;cursor:pointer;color:var(--text2)}
+.toolbar-btn:hover{color:var(--cyan);border-color:var(--cyan)}
+.toolbar-btn.active{background:var(--cyan);color:#000;border-color:var(--cyan)}
+
+.deck-viewer{flex:1;padding:20px;overflow-y:auto}
+.slide-container{margin-bottom:32px}
+.slide-header{display:flex;align-items:center;justify-content:between;margin-bottom:16px}
+.slide-number{background:var(--cyan);color:#000;padding:4px 8px;border-radius:4px;font-size:.8rem;font-weight:700}
+.slide-title{font-weight:700;margin-left:12px}
+.slide-content{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:24px;min-height:300px}
+.slide-content h2{margin-bottom:16px;color:var(--cyan)}
+.slide-content h3{margin-bottom:12px;color:var(--text)}
+.slide-content ul{margin-left:20px;margin-bottom:16px}
+.slide-content li{margin-bottom:8px;line-height:1.6}
+
+.generate-btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--cyan),var(--purple));color:#fff;border:none;border-radius:8px;font-weight:700;font-size:1rem;cursor:pointer;transition:.3s;margin-bottom:20px}
+.generate-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,174,239,.3)}
+.generate-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+.processing{display:none;align-items:center;justify-content:center;padding:40px;color:var(--cyan)}
+.processing.active{display:flex}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top:3px solid var(--cyan);border-radius:50%;animation:spin 1s linear infinite;margin-right:12px}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* Responsive */
+@media(max-width:1024px){
+  .builder-layout{grid-template-columns:1fr;grid-template-rows:400px 1fr}
+  .input-panel{max-height:400px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>Advanced Pitch Builder</h1>
+      <p style="color:var(--text2);margin-top:8px">AI-powered deck generation for RFPs, discovery calls, and executive presentations</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary">Save Draft</button>
+      <button class="btn btn-primary" onclick="exportDeck()">Export Deck</button>
+    </div>
+  </div>
+
+  <div class="builder-layout">
+    <!-- Left Panel - Input -->
+    <div class="builder-panel input-panel">
+      <div class="panel-header">
+        <div class="panel-title">Deck Configuration</div>
+        <div class="panel-subtitle">Define your presentation requirements</div>
+      </div>
+
+      <div class="input-tabs">
+        <div class="input-tab active" data-tab="requirements">Requirements</div>
+        <div class="input-tab" data-tab="templates">Templates</div>
+        <div class="input-tab" data-tab="upload">Upload</div>
+      </div>
+
+      <div class="tab-content">
+        <!-- Requirements Tab -->
+        <div class="tab-panel active" id="requirements-tab">
+          <div class="form-group">
+            <label>Deck Type</label>
+            <select class="form-control" id="deckType">
+              <option value="rfp">RFP Response</option>
+              <option value="rfi">RFI Response</option>
+              <option value="discovery">Discovery Call Deck</option>
+              <option value="executive">Executive Presentation</option>
+              <option value="technical">Technical Deep Dive</option>
+              <option value="competitive">Competitive Pitch</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Company/Prospect</label>
+            <input type="text" class="form-control" id="prospectName" placeholder="Enter company name">
+          </div>
+
+          <div class="form-group">
+            <label>Industry</label>
+            <select class="form-control" id="industry">
+              <option value="financial">Financial Services</option>
+              <option value="healthcare">Healthcare</option>
+              <option value="retail">Retail</option>
+              <option value="cpg">Consumer Goods</option>
+              <option value="technology">Technology</option>
+              <option value="manufacturing">Manufacturing</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Key Requirements/Pain Points</label>
+            <textarea class="form-control large" id="requirements" placeholder="Describe their main challenges, requirements, or what they're trying to achieve..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Meeting/Presentation Context</label>
+            <textarea class="form-control" id="context" placeholder="Discovery call notes, RFP details, meeting objectives..."></textarea>
+          </div>
+
+          <button class="generate-btn" onclick="generateDeck()">🚀 Generate Complete Deck</button>
+        </div>
+
+        <!-- Templates Tab -->
+        <div class="tab-panel" id="templates-tab" style="display:none">
+          <div class="template-grid">
+            <div class="template-card" data-template="enterprise-rfp">
+              <div class="template-name">Enterprise RFP</div>
+              <div class="template-desc">Comprehensive RFP response with technical specs</div>
+            </div>
+            <div class="template-card" data-template="executive-pitch">
+              <div class="template-name">Executive Pitch</div>
+              <div class="template-desc">C-suite focused, strategic presentation</div>
+            </div>
+            <div class="template-card" data-template="discovery-deck">
+              <div class="template-name">Discovery Deck</div>
+              <div class="template-desc">Consultative, question-driven approach</div>
+            </div>
+            <div class="template-card" data-template="competitive-battle">
+              <div class="template-name">Competitive Battle</div>
+              <div class="template-desc">Head-to-head competitive positioning</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload Tab -->
+        <div class="tab-panel" id="upload-tab" style="display:none">
+          <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon">📄</div>
+            <div class="upload-text">Drop RFP/RFI documents here</div>
+            <div class="upload-subtext">Or click to browse (PDF, DOC, TXT)</div>
+            <input type="file" id="fileInput" style="display:none" accept=".pdf,.doc,.docx,.txt" onchange="handleFileUpload(this)">
+          </div>
+
+          <div class="form-group" style="margin-top:24px">
+            <label>Or Paste Content</label>
+            <textarea class="form-control large" id="pastedContent" placeholder="Paste RFP requirements, discovery call notes, or any relevant content..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel - Output -->
+    <div class="builder-panel output-panel">
+      <div class="panel-header">
+        <div class="panel-title">Generated Deck</div>
+        <div class="panel-subtitle">AI-crafted presentation slides</div>
+      </div>
+
+      <div class="output-toolbar">
+        <div class="toolbar-left">
+          <button class="toolbar-btn active">Deck View</button>
+          <button class="toolbar-btn">Outline</button>
+          <button class="toolbar-btn">Speaker Notes</button>
+        </div>
+        <div>
+          <button class="toolbar-btn">Edit Slide</button>
+          <button class="toolbar-btn">Add Slide</button>
+        </div>
+      </div>
+
+      <div class="deck-viewer">
+        <div class="processing" id="processing">
+          <div class="spinner"></div>
+          <div>Generating your presentation...</div>
+        </div>
+
+        <div id="deckOutput">
+          <div class="slide-container">
+            <div class="slide-header">
+              <span class="slide-number">01</span>
+              <span class="slide-title">Welcome & Overview</span>
+            </div>
+            <div class="slide-content">
+              <h2>Partnership Opportunity with [Company Name]</h2>
+              <h3>Quad: Your Complete Marketing Experience Partner</h3>
+              <ul>
+                <li><strong>Today's Agenda:</strong> Understanding your challenges and demonstrating how Quad delivers solutions</li>
+                <li><strong>Our Approach:</strong> Data-driven, integrated marketing that drives measurable results</li>
+                <li><strong>Proven Results:</strong> 8B mail pieces annually, 2,100+ brands, 50+ years of innovation</li>
+              </ul>
+              <p style="color:var(--cyan);font-style:italic;margin-top:20px">
+                "We don't just execute campaigns—we engineer customer experiences that drive growth."
+              </p>
+            </div>
+          </div>
+
+          <div class="slide-container">
+            <div class="slide-header">
+              <span class="slide-number">02</span>
+              <span class="slide-title">Understanding Your Challenge</span>
+            </div>
+            <div class="slide-content">
+              <h2>The Challenge We Solve</h2>
+              <p style="margin-bottom:16px">Based on our analysis of your requirements:</p>
+              <ul>
+                <li>Fragmented marketing stack creating inefficiencies</li>
+                <li>Rising customer acquisition costs across digital channels</li>
+                <li>Need for measurable, attributable marketing results</li>
+                <li>Desire for integrated campaigns that work across channels</li>
+              </ul>
+              <p style="color:var(--yellow);font-weight:600;margin-top:20px">
+                🎯 Our Solution: Complete Marketing Experience (MX) under one roof
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.input-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    const tabId = this.dataset.tab;
+    
+    // Update tab active states
+    document.querySelectorAll('.input-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    
+    // Update panel visibility
+    document.querySelectorAll('.tab-panel').forEach(panel => panel.style.display = 'none');
+    document.getElementById(tabId + '-tab').style.display = 'block';
+  });
+});
+
+// Template selection
+document.querySelectorAll('.template-card').forEach(card => {
+  card.addEventListener('click', function() {
+    document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+    this.classList.add('selected');
+  });
+});
+
+// File upload handling
+function handleFileUpload(input) {
+  const file = input.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('pastedContent').value = 'File uploaded: ' + file.name + '\n\n' + e.target.result.substring(0, 1000) + '...';
+    };
+    reader.readAsText(file);
+  }
+}
+
+// Drag and drop
+const uploadZone = document.querySelector('.upload-zone');
+uploadZone.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  this.classList.add('dragover');
+});
+uploadZone.addEventListener('dragleave', function() {
+  this.classList.remove('dragover');
+});
+uploadZone.addEventListener('drop', function(e) {
+  e.preventDefault();
+  this.classList.remove('dragover');
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    handleFileUpload({files: files});
+  }
+});
+
+// Advanced deck generation
+function generateDeck() {
+  const deckType = document.getElementById('deckType').value;
+  const prospect = document.getElementById('prospectName').value || '[Company Name]';
+  const industry = document.getElementById('industry').value;
+  const requirements = document.getElementById('requirements').value;
+  const context = document.getElementById('context').value;
+  const pastedContent = document.getElementById('pastedContent').value;
+
+  // Show processing
+  document.getElementById('processing').classList.add('active');
+  document.getElementById('deckOutput').style.display = 'none';
+
+  // Simulate AI processing
+  setTimeout(() => {
+    const generatedDeck = generateAdvancedDeck(deckType, prospect, industry, requirements, context, pastedContent);
+    document.getElementById('deckOutput').innerHTML = generatedDeck;
+    document.getElementById('processing').classList.remove('active');
+    document.getElementById('deckOutput').style.display = 'block';
+  }, 3000);
+}
+
+function generateAdvancedDeck(type, prospect, industry, requirements, context, content) {
+  const industryData = {
+    financial: {name: 'Financial Services', painPoints: 'compliance, customer acquisition costs, digital transformation', caseStudy: 'Liberty Debt Relief: $20K+/week postal savings', solution: 'MergedMail optimization + At-Home Connect automation'},
+    healthcare: {name: 'Healthcare', painPoints: 'patient acquisition, HIPAA compliance, referral generation', caseStudy: 'InnovAge: 3.5x conversion rate improvement', solution: 'HIPAA-compliant direct mail + healthcare expertise'},
+    retail: {name: 'Retail', painPoints: 'store traffic, seasonal campaigns, omnichannel integration', caseStudy: 'At Home: 90 installations in 90 days', solution: 'In-Store Connect + packaging integration'},
+    cpg: {name: 'Consumer Goods', painPoints: 'shelf competition, packaging costs, in-store presence', caseStudy: 'Holy City Brewing: 34% production increase', solution: '1.7B packaging pieces + in-store displays'},
+    technology: {name: 'Technology', painPoints: 'customer acquisition, product launches, B2B outreach', caseStudy: 'Intuit: 122% of impression goal', solution: 'Triggered campaigns + data precision'},
+    manufacturing: {name: 'Manufacturing', painPoints: 'lead generation, trade show follow-up, B2B relationships', caseStudy: 'Stanley Steemer: 541% ROI', solution: 'Direct mail + digital integration'}
+  };
+
+  const ind = industryData[industry] || industryData.financial;
+  
+  // Store the generated content globally for export
+  window.currentDeckData = {
+    prospect,
+    industry: ind.name,
+    painPoints: ind.painPoints,
+    solution: ind.solution,
+    caseStudy: ind.caseStudy,
+    type,
+    requirements,
+    context
+  };
+
+  return `
+    <div class="slide-container">
+      <div class="slide-header">
+        <span class="slide-number">01</span>
+        <span class="slide-title">Executive Summary</span>
+      </div>
+      <div class="slide-content">
+        <h2>${prospect} + Quad Partnership Opportunity</h2>
+        <h3>Transforming ${ind.name} Marketing Through Integrated Experiences</h3>
+        <ul>
+          <li><strong>Challenge Identified:</strong> ${ind.painPoints}</li>
+          <li><strong>Quad Solution:</strong> ${ind.solution}</li>
+          <li><strong>Proven Results:</strong> ${ind.caseStudy}</li>
+          <li><strong>Next Steps:</strong> 30-day pilot program with measurable KPIs</li>
+        </ul>
+        <p style="color:var(--cyan);font-style:italic;margin-top:20px;">
+          "We engineer customer experiences, not just campaigns."
+        </p>
+      </div>
+    </div>
+
+    <div class="slide-container">
+      <div class="slide-header">
+        <span class="slide-number">02</span>
+        <span class="slide-title">Your Challenge Analysis</span>
+      </div>
+      <div class="slide-content">
+        <h2>Understanding ${prospect}'s Unique Situation</h2>
+        <p style="margin-bottom:16px;"><strong>Requirements Analysis:</strong></p>
+        <div style="background:var(--bg2);padding:16px;border-radius:6px;margin-bottom:16px;font-style:italic;">
+          ${requirements || 'Based on our discovery conversation, you need integrated marketing solutions that deliver measurable ROI while reducing vendor complexity.'}
+        </div>
+        <h3>Key Pain Points We Address:</h3>
+        <ul>
+          <li>Rising digital acquisition costs (CPMs up 40% YoY)</li>
+          <li>Fragmented vendor relationships creating inefficiencies</li>
+          <li>Need for privacy-safe targeting post-cookie deprecation</li>
+          <li>Demand for measurable, attributable campaign results</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="slide-container">
+      <div class="slide-header">
+        <span class="slide-number">03</span>
+        <span class="slide-title">Quad's Integrated MX Solution</span>
+      </div>
+      <div class="slide-content">
+        <h2>Complete Marketing Experience Under One Roof</h2>
+        <h3>Five Integrated Pillars:</h3>
+        <ul>
+          <li><strong>🧠 Intelligence:</strong> 3B+ household data points for precision targeting</li>
+          <li><strong>🎨 Creative:</strong> Betty agency - "Built for brands that can't stand bland"</li>
+          <li><strong>🏭 Production:</strong> 8B mail pieces + 1.7B packaging pieces annually</li>
+          <li><strong>📺 Media:</strong> Rise agency with full transparency, no hidden fees</li>
+          <li><strong>⚡ Technology:</strong> At-Home Connect, Marketer's Studio, MergedMail™</li>
+        </ul>
+        <p style="color:var(--green);font-weight:600;margin-top:20px;">
+          💡 The Only Company Combining All 5 MX Elements
+        </p>
+      </div>
+    </div>
+
+    <div class="slide-container">
+      <div class="slide-header">
+        <span class="slide-number">04</span>
+        <span class="slide-title">Proven Results in ${ind.name}</span>
+      </div>
+      <div class="slide-content">
+        <h2>Case Study: ${ind.caseStudy}</h2>
+        <p style="margin-bottom:16px;">Similar ${ind.name} company, comparable challenges:</p>
+        <ul>
+          <li><strong>Challenge:</strong> ${ind.painPoints}</li>
+          <li><strong>Solution:</strong> ${ind.solution}</li>
+          <li><strong>Timeline:</strong> 90-day implementation with ongoing optimization</li>
+          <li><strong>Results:</strong> Measurable ROI within first quarter</li>
+        </ul>
+        <div style="background:rgba(16,185,129,.1);padding:20px;border-radius:8px;margin-top:20px;border-left:4px solid var(--green);">
+          <p style="font-weight:600;color:var(--green);">Success Indicators:</p>
+          <p>✅ Reduced cost-per-acquisition<br>
+          ✅ Increased campaign attribution<br>
+          ✅ Simplified vendor management<br>
+          ✅ Improved customer experience</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-container">
+      <div class="slide-header">
+        <span class="slide-number">05</span>
+        <span class="slide-title">Recommended Implementation</span>
+      </div>
+      <div class="slide-content">
+        <h2>30-Day Pilot Program for ${prospect}</h2>
+        <h3>Phase 1: Foundation (Days 1-10)</h3>
+        <ul>
+          <li>Data integration and audience analysis</li>
+          <li>Creative development and brand alignment</li>
+          <li>Campaign strategy and KPI definition</li>
+        </ul>
+        <h3>Phase 2: Execution (Days 11-25)</h3>
+        <ul>
+          <li>Multi-channel campaign launch</li>
+          <li>Real-time monitoring and optimization</li>
+          <li>Performance tracking and reporting</li>
+        </ul>
+        <h3>Phase 3: Analysis (Days 26-30)</h3>
+        <ul>
+          <li>Comprehensive results analysis</li>
+          <li>ROI calculation and attribution mapping</li>
+          <li>Scale-up recommendations</li>
+        </ul>
+        <p style="color:var(--cyan);font-weight:600;margin-top:20px;">
+          🚀 Ready to start immediately upon approval
+        </p>
+      </div>
+    </div>
+
+    <div class="slide-container">
+      <div class="slide-header">
+        <span class="slide-number">06</span>
+        <span class="slide-title">Investment & Next Steps</span>
+      </div>
+      <div class="slide-content">
+        <h2>Partnership Investment</h2>
+        <p style="margin-bottom:16px;">Pilot program designed to demonstrate immediate value:</p>
+        <ul>
+          <li><strong>Pilot Budget:</strong> Scalable based on campaign scope</li>
+          <li><strong>Timeline:</strong> 30 days from approval to results</li>
+          <li><strong>Success Metrics:</strong> ROI, attribution, efficiency gains</li>
+          <li><strong>Scale Opportunity:</strong> Full MX integration based on pilot results</li>
+        </ul>
+        <h3>Immediate Next Steps:</h3>
+        <ol style="margin-left:20px;margin-top:16px;">
+          <li>Finalize pilot scope and objectives (This week)</li>
+          <li>Execute partnership agreement (Next week)</li>
+          <li>Begin data integration and campaign development</li>
+          <li>Launch pilot program</li>
+        </ol>
+        <p style="color:var(--yellow);font-weight:700;margin-top:24px;text-align:center;">
+          🤝 Ready to transform your marketing experience?
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+// Export deck as downloadable HTML presentation
+function exportDeck() {
+  const deckData = window.currentDeckData;
+  
+  if (!deckData) {
+    alert('Please generate a deck first before exporting.');
+    return;
+  }
+  
+  // Get the current deck content
+  const deckOutput = document.getElementById('deckOutput').innerHTML;
+  
+  // Create a complete HTML presentation
+  const presentationHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${deckData.prospect} - Quad Partnership Presentation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: #08090d; 
+      color: #eaedf3; 
+      line-height: 1.6; 
+      padding: 20px;
+    }
+    .presentation-header {
+      text-align: center;
+      padding: 40px 20px;
+      border-bottom: 2px solid #E31837;
+      margin-bottom: 40px;
+    }
+    .presentation-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      color: #00AEEF;
+      margin-bottom: 10px;
+    }
+    .presentation-subtitle {
+      font-size: 1.1rem;
+      color: #8b8fa3;
+    }
+    .slide-container {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 40px;
+      margin-bottom: 40px;
+      page-break-inside: avoid;
+    }
+    .slide-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .slide-number {
+      background: #00AEEF;
+      color: #000;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-right: 16px;
+    }
+    .slide-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: #eaedf3;
+    }
+    .slide-content h2 {
+      font-family: 'Playfair Display', serif;
+      color: #00AEEF;
+      font-size: 1.8rem;
+      margin-bottom: 16px;
+    }
+    .slide-content h3 {
+      color: #eaedf3;
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+    }
+    .slide-content ul {
+      margin-left: 24px;
+      margin-bottom: 20px;
+    }
+    .slide-content li {
+      margin-bottom: 12px;
+      line-height: 1.7;
+    }
+    .slide-content strong {
+      color: #00AEEF;
+    }
+    .footer {
+      text-align: center;
+      padding: 40px;
+      border-top: 2px solid #E31837;
+      margin-top: 40px;
+      color: #8b8fa3;
+    }
+    @media print {
+      body { background: white; color: black; }
+      .slide-container { 
+        background: white; 
+        border: 2px solid #E31837;
+        page-break-inside: avoid;
+        margin-bottom: 60px;
+      }
+      .presentation-title, .slide-content h2 { color: #E31837; }
+      .slide-content strong { color: #E31837; }
+    }
+  </style>
+</head>
+<body>
+  <div class="presentation-header">
+    <h1 class="presentation-title">\${deckData.prospect} Partnership Presentation</h1>
+    <p class="presentation-subtitle">Powered by Quad Marketing Experience • Generated \${new Date().toLocaleDateString()}</p>
+  </div>
+  
+  \${deckOutput}
+  
+  <div class="footer">
+    <p><strong>Quad Marketing Experience Company</strong></p>
+    <p>8B+ mail pieces annually • 50+ years of innovation • Complete MX under one roof</p>
+    <p style="margin-top: 10px; font-style: italic;">"We engineer customer experiences, not just campaigns."</p>
+  </div>
+
+  <script>
+    // Auto-print dialog for easy PDF export
+    setTimeout(function() {
+      if (confirm('Export this presentation as PDF? Click OK to open print dialog.')) {
+        window.print();
+      }
+    }, 1000);
+  </script>
+</body>
+</html>`;
+
+  // Create and download the file
+  const blob = new Blob([presentationHTML], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  
+  const filename = `\${deckData.prospect.replace(/[^a-z0-9]/gi, '_')}_Quad_Presentation_\${new Date().toISOString().split('T')[0]}.html`;
+  
+  link.href = url;
+  link.download = filename;
+  link.click();
+  
+  // Clean up
+  URL.revokeObjectURL(url);
+  
+  // Show success message
+  alert(`✅ Presentation exported successfully!
+
+File: \${filename}
+
+📋 How to use:
+1. Open the downloaded HTML file in your browser
+2. Click Print (or Ctrl+P) to save as PDF
+3. Choose "Save as PDF" in print dialog
+4. Your presentation is ready for client delivery!
+
+🎯 The presentation includes all \${document.querySelectorAll('.slide-container').length} slides with professional formatting.`);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{
+  "version": 2,
+  "name": "emmett-sales-hq-testing",
+  "builds": [
+    {
+      "src": "**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/accounts.html",
+      "dest": "/accounts.html"
+    },
+    {
+      "src": "/accounts-news.html", 
+      "dest": "/accounts-news.html"
+    },
+    {
+      "src": "/strategic-accounts.html",
+      "dest": "/strategic-accounts.html"
+    },
+    {
+      "src": "/presentation.html",
+      "dest": "/presentation.html"
+    },
+    {
+      "src": "/advanced-pitch-builder.html",
+      "dest": "/advanced-pitch-builder.html"
+    },
+    {
+      "src": "/interactive-war-room.html",
+      "dest": "/interactive-war-room.html"
+    },
+    {
+      "src": "/news-data.js",
+      "dest": "/news-data.js"
+    }
+  ]
+}

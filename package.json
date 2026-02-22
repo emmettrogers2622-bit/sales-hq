@@ -1,0 +1,19 @@
+{
+  "name": "emmett-sales-hq-testing",
+  "version": "2.0.0",
+  "description": "Emmett's Sales HQ - TESTING VERSION",
+  "scripts": {
+    "build": "echo 'Static build complete'"
+  },
+  "keywords": [
+    "sales",
+    "quad",
+    "hq"
+  ],
+  "author": "Justice + Emmett",
+  "main": "index.js",
+  "license": "ISC",
+  "dependencies": {
+    "vercel": "^50.20.0"
+  }
+}

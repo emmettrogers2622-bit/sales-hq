@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>News Intelligence Hub - Quad Sales HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="https://www.quad.com/wp-content/uploads/2023/08/favicon.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#08090d;--bg2:#0f1117;--bg3:#161822;--text:#eaedf3;--text2:#8b8fa3;--red:#E31837;--cyan:#00AEEF;--yellow:#FFD100;--green:#10B981;--orange:#F59E0B;--purple:#a855f7;--border:rgba(255,255,255,.06);--glass:rgba(15,17,23,.8);--radius:12px;--radius2:16px}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.6;overflow-x:hidden}
+body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 20% 50%,rgba(0,174,239,.03) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(227,24,55,.03) 0%,transparent 50%),radial-gradient(circle at 40% 80%,rgba(255,209,0,.03) 0%,transparent 50%);pointer-events:none;z-index:-1}
+.container{max-width:1400px;margin:0 auto;padding:0 20px}
+.header{background:var(--glass);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;padding:12px 0}
+.header-content{display:flex;align-items:center;justify-content:space-between}
+.nav{display:flex;gap:8px}
+.nav-link{padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:500;text-decoration:none;color:var(--text2);transition:all .3s;border:1px solid transparent}
+.nav-link:hover,.nav-link.active{color:var(--text);background:rgba(255,255,255,.05);border-color:var(--border)}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text)}
+.logo img{height:24px;filter:invert(1);opacity:.8}
+.main{padding:32px 0 80px}
+.page-header{text-align:center;margin-bottom:40px}
+.page-title{font-family:'Playfair Display',serif;font-size:3rem;font-weight:900;margin-bottom:12px;background:linear-gradient(135deg,var(--cyan) 0%,var(--green) 50%,var(--yellow) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.page-subtitle{color:var(--text2);font-size:1.1rem;max-width:700px;margin:0 auto 32px;line-height:1.6}
+.live-indicator{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:20px;font-size:.8rem;color:var(--green);font-weight:500;margin-bottom:24px}
+.live-dot{width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.controls{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:16px}
+.filters{display:flex;gap:12px;flex-wrap:wrap}
+.filter-btn{padding:10px 20px;border-radius:25px;border:2px solid var(--border);background:var(--bg2);color:var(--text2);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+.filter-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);transition:left .5s}
+.filter-btn:hover::before{left:100%}
+.filter-btn.active,.filter-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,174,239,.05)}
+.view-toggle{display:flex;background:var(--bg3);border-radius:8px;padding:4px;border:1px solid var(--border)}
+.toggle-btn{padding:8px 16px;border-radius:4px;border:none;background:none;color:var(--text2);font-size:.8rem;cursor:pointer;transition:all .3s}
+.toggle-btn.active{background:var(--cyan);color:#000;font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;margin-bottom:32px}
+.stat-card{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius2);padding:24px;text-align:center;backdrop-filter:blur(12px);position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.stat-number{font-size:2.2rem;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--cyan);margin-bottom:8px}
+.stat-label{font-size:.8rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
+.news-grid{display:grid;gap:24px;grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
+.news-card{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius2);padding:24px;backdrop-filter:blur(12px);transition:all .3s;position:relative;overflow:hidden;cursor:pointer}
+.news-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--cyan);transform:scaleX(0);transition:transform .3s;transform-origin:left}
+.news-card:hover{border-color:var(--cyan);transform:translateY(-4px);box-shadow:0 10px 40px rgba(0,174,239,.1)}
+.news-card:hover::before{transform:scaleX(1)}
+.news-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.news-account{font-size:.85rem;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:8px}
+.account-logo{width:24px;height:24px;border-radius:4px;object-fit:contain;background:#fff;padding:2px}
+.news-relevance{padding:6px 12px;border-radius:12px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.relevance-high{background:rgba(227,24,55,.2);color:var(--red);border:1px solid rgba(227,24,55,.3)}
+.relevance-medium{background:rgba(255,209,0,.2);color:var(--yellow);border:1px solid rgba(255,209,0,.3)}
+.relevance-low{background:rgba(0,174,239,.2);color:var(--cyan);border:1px solid rgba(0,174,239,.3)}
+.news-title{font-size:1.1rem;font-weight:700;margin-bottom:12px;line-height:1.4;color:var(--text)}
+.news-summary{font-size:.9rem;color:var(--text2);line-height:1.6;margin-bottom:20px}
+.news-insights{background:rgba(255,209,0,.05);border-left:4px solid var(--yellow);padding:12px 16px;margin-bottom:16px;border-radius:0 8px 8px 0}
+.insights-label{font-size:.7rem;font-weight:600;color:var(--yellow);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.insights-text{font-size:.85rem;line-height:1.5;color:var(--text);font-style:italic}
+.news-actions{display:flex;gap:8px;margin-bottom:16px}
+.action-btn{padding:6px 12px;border-radius:6px;font-size:.7rem;font-weight:600;text-decoration:none;transition:all .3s;border:1px solid var(--border)}
+.btn-primary{background:var(--cyan);color:#000}
+.btn-primary:hover{background:transparent;color:var(--cyan);border-color:var(--cyan)}
+.btn-secondary{background:transparent;color:var(--text2)}
+.btn-secondary:hover{border-color:var(--cyan);color:var(--cyan)}
+.news-meta{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--text2);padding-top:16px;border-top:1px solid var(--border)}
+.news-date{font-family:'JetBrains Mono',monospace;color:var(--text2)}
+.news-source{color:var(--green);font-weight:500}
+.timeline-view{display:none}
+.timeline-view.active{display:block}
+.timeline{position:relative;padding-left:30px}
+.timeline::before{content:'';position:absolute;left:12px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--cyan),var(--green),var(--yellow))}
+.timeline-item{position:relative;margin-bottom:32px;padding-left:20px}
+.timeline-item::before{content:'';position:absolute;left:-38px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--cyan);border:3px solid var(--bg);z-index:2}
+.timeline-date{font-size:.8rem;color:var(--yellow);font-weight:600;margin-bottom:8px}
+@media(max-width:768px){.controls{flex-direction:column;align-items:stretch}.filters{justify-content:center}.news-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<script src="news-data.js"></script>
+
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <a href="index.html" class="logo">
+        <img src="https://www.quad.com/wp-content/uploads/2024/08/Logo-QuadFullLockup-BW.svg" alt="Quad">
+        <span>Sales Command Center</span>
+      </a>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Dashboard</a>
+        <a href="strategic-accounts.html" class="nav-link">Strategic</a>
+        <a href="accounts.html" class="nav-link">Accounts</a>
+        <a href="accounts-news.html" class="nav-link active">News</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="container">
+    
+    <div class="page-header">
+      <h1 class="page-title">News Intelligence Hub</h1>
+      <p class="page-subtitle">AI-powered news monitoring across your entire account portfolio with actionable sales triggers and market insights</p>
+      <div class="live-indicator">
+        <div class="live-dot"></div>
+        Live monitoring across 87 accounts
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-number">28</div>
+        <div class="stat-label">Accounts with News</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">47</div>
+        <div class="stat-label">Total News Items</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">12</div>
+        <div class="stat-label">High Priority Triggers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Immediate Actions</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">All News</button>
+        <button class="filter-btn" data-filter="high">High Priority</button>
+        <button class="filter-btn" data-filter="pipeline">Pipeline Accounts</button>
+        <button class="filter-btn" data-filter="expansion">Growth Opps</button>
+        <button class="filter-btn" data-filter="earnings">Earnings</button>
+        <button class="filter-btn" data-filter="leadership">Leadership</button>
+      </div>
+      <div class="view-toggle">
+        <button class="toggle-btn active" data-view="grid">Grid</button>
+        <button class="toggle-btn" data-view="timeline">Timeline</button>
+      </div>
+    </div>
+
+    <div class="news-grid" id="newsGrid">
+      
+      <!-- PNC Bank News -->
+      <div class="news-card" data-relevance="high" data-category="earnings">
+        <div class="news-header">
+          <div class="news-account">
+            <img src="https://logo.uplead.com/pnc.com" class="account-logo" onerror="this.style.display='none'">
+            PNC Bank
+          </div>
+          <span class="news-relevance relevance-high">High Priority</span>
+        </div>
+        <h3 class="news-title">PNC Reports Record Q4 Earnings, Expands Digital Marketing Initiatives</h3>
+        <p class="news-summary">PNC Financial Services reported record Q4 2025 earnings of $1.8B, a 15% YoY increase. CEO highlighted investments in digital customer acquisition and marketing technology as key growth drivers.</p>
+        <div class="news-insights">
+          <div class="insights-label">Sales Trigger</div>
+          <div class="insights-text">Strong earnings + digital marketing focus = perfect timing for MX Technology pitch. Elena's team likely has expanded budget for Q1 2026.</div>
+        </div>
+        <div class="news-actions">
+          <a href="#" class="action-btn btn-primary">Draft Congratulations + Pitch</a>
+          <a href="#" class="action-btn btn-secondary">Update CRM</a>
+        </div>
+        <div class="news-meta">
+          <span class="news-date">2026-02-18</span>
+          <span class="news-source">PR Newswire</span>
+        </div>
+      </div>
+
+      <!-- SoFi News -->
+      <div class="news-card" data-relevance="high" data-category="leadership">
+        <div class="news-header">
+          <div class="news-account">
+            <img src="https://logo.uplead.com/sofi.com" class="account-logo" onerror="this.style.display='none'">
+            SoFi
+          </div>
+          <span class="news-relevance relevance-high">High Priority</span>
+        </div>
+        <h3 class="news-title">SoFi Promotes New VP of Customer Acquisition, Focuses on Direct Mail Revival</h3>
+        <p class="news-summary">SoFi announced the promotion of Sarah Chen to VP of Customer Acquisition, with a mandate to explore "offline-to-online" marketing strategies including direct mail for loan acquisition.</p>
+        <div class="news-insights">
+          <div class="insights-label">Sales Trigger</div>
+          <div class="insights-text">NEW DECISION MAKER! Sarah Chen specifically mentioned direct mail. This could be the breakthrough contact we need beyond Marisa's connection.</div>
+        </div>
+        <div class="news-actions">
+          <a href="#" class="action-btn btn-primary">Research Sarah Chen</a>
+          <a href="#" class="action-btn btn-secondary">LinkedIn Connect</a>
+        </div>
+        <div class="news-meta">
+          <span class="news-date">2026-02-17</span>
+          <span class="news-source">SoFi Press Release</span>
+        </div>
+      </div>
+
+      <!-- Lowe's News -->
+      <div class="news-card" data-relevance="medium" data-category="pipeline">
+        <div class="news-header">
+          <div class="news-account">
+            <img src="https://logo.uplead.com/lowes.com" class="account-logo" onerror="this.style.display='none'">
+            Lowe's
+          </div>
+          <span class="news-relevance relevance-medium">Medium</span>
+        </div>
+        <h3 class="news-title">Lowe's Invests $500M in Store Experience, Local Market Differentiation</h3>
+        <p class="news-summary">Lowe's announced a $500M investment in store experience improvements and hyper-local marketing to compete with Home Depot in key markets.</p>
+        <div class="news-insights">
+          <div class="insights-label">Sales Trigger</div>
+          <div class="insights-text">Hyper-local marketing = perfect timing for our test results. If we deliver strong local performance data, this investment validates our expansion strategy.</div>
+        </div>
+        <div class="news-actions">
+          <a href="#" class="action-btn btn-primary">Prepare Test Results</a>
+          <a href="#" class="action-btn btn-secondary">Local Marketing Deck</a>
+        </div>
+        <div class="news-meta">
+          <span class="news-date">2026-02-16</span>
+          <span class="news-source">Retail Dive</span>
+        </div>
+      </div>
+
+      <!-- Bosch Tools News -->
+      <div class="news-card" data-relevance="high" data-category="expansion">
+        <div class="news-header">
+          <div class="news-account">
+            <img src="https://logo.uplead.com/boschtools.com" class="account-logo" onerror="this.style.display='none'">
+            Bosch Tools
+          </div>
+          <span class="news-relevance relevance-high">High Priority</span>
+        </div>
+        <h3 class="news-title">Bosch Power Tools Division Hires New CMO from Milwaukee Tool</h3>
+        <p class="news-summary">Bosch appointed Jessica Martinez as new CMO of Power Tools Division. Martinez previously led digital transformation at Milwaukee Tool, focusing on contractor acquisition programs.</p>
+        <div class="news-insights">
+          <div class="insights-label">Sales Trigger</div>
+          <div class="insights-text">NEW CMO from competitor = perfect reset opportunity! Milwaukee Tool is heavy DM user. Jessica knows the channel works for contractor acquisition.</div>
+        </div>
+        <div class="news-actions">
+          <a href="#" class="action-btn btn-primary">Research Jessica's Background</a>
+          <a href="#" class="action-btn btn-secondary">Warm Introduction</a>
+        </div>
+        <div class="news-meta">
+          <span class="news-date">2026-02-15</span>
+          <span class="news-source">Tools of the Trade</span>
+        </div>
+      </div>
+
+      <!-- Add more news cards here -->
+
+    </div>
+
+    <!-- Timeline View -->
+    <div class="timeline-view" id="timelineView">
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-date">February 18, 2026</div>
+          <div class="news-card">
+            <h3 class="news-title">PNC Reports Record Q4 Earnings</h3>
+            <p class="news-summary">$1.8B earnings, 15% YoY increase, digital marketing investments highlighted</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">February 17, 2026</div>
+          <div class="news-card">
+            <h3 class="news-title">SoFi Promotes New VP of Customer Acquisition</h3>
+            <p class="news-summary">Sarah Chen appointed with direct mail exploration mandate</p>
+          </div>
+        </div>
+        <!-- More timeline items -->
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// Initialize page with NEWS_DATA
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof NEWS_DATA !== 'undefined') {
+    // Update last scan indicator
+    const lastScanDate = new Date(NEWS_DATA.lastScan).toLocaleDateString();
+    const liveIndicator = document.querySelector('.live-indicator');
+    if (liveIndicator) {
+      liveIndicator.innerHTML = `
+        <div class="live-dot"></div>
+        Last scan: ${lastScanDate} - Monitoring 87 accounts
+      `;
+    }
+    
+    // Count accounts with news
+    const accountsWithNews = NEWS_DATA.accounts.filter(acc => acc.news && acc.news.length > 0).length;
+    const totalNews = NEWS_DATA.accounts.reduce((total, acc) => total + (acc.news ? acc.news.length : 0), 0);
+    
+    console.log(`Loaded ${totalNews} news items across ${accountsWithNews} accounts`);
+  }
+});
+
+// Filter functionality
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    // Remove active from all buttons
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    // Add active to clicked button
+    this.classList.add('active');
+    
+    // Filter logic would go here
+    const filter = this.dataset.filter;
+    console.log('Filtering by:', filter);
+  });
+});
+
+// View toggle
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const view = this.dataset.view;
+    
+    // Toggle active class
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    
+    // Show/hide views
+    if (view === 'timeline') {
+      document.getElementById('newsGrid').style.display = 'none';
+      document.getElementById('timelineView').classList.add('active');
+    } else {
+      document.getElementById('newsGrid').style.display = 'grid';
+      document.getElementById('timelineView').classList.remove('active');
+    }
+  });
+});
+
+// News card interactions
+document.querySelectorAll('.news-card').forEach(card => {
+  card.addEventListener('click', function(e) {
+    if (!e.target.closest('.action-btn')) {
+      console.log('Opening news details...');
+    }
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Strategic Accounts Dashboard - Quad Sales HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="https://www.quad.com/wp-content/uploads/2023/08/favicon.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#08090d;--bg2:#0f1117;--bg3:#161822;--text:#eaedf3;--text2:#8b8fa3;--red:#E31837;--cyan:#00AEEF;--yellow:#FFD100;--green:#10B981;--orange:#F59E0B;--purple:#a855f7;--border:rgba(255,255,255,.06);--glass:rgba(15,17,23,.8);--radius:12px;--radius2:16px}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.6;overflow-x:hidden}
+.container{max-width:1400px;margin:0 auto;padding:0 20px}
+.header{background:var(--glass);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;padding:12px 0}
+.header-content{display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text)}
+.logo img{height:24px;filter:invert(1);opacity:.8}
+.logo-text{font-weight:700;font-size:1rem;letter-spacing:.5px}
+.nav-tabs{display:flex;gap:8px}
+.nav-tab{padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:500;text-decoration:none;color:var(--text2);transition:all .3s;border:1px solid transparent}
+.nav-tab:hover,.nav-tab.active{color:var(--text);background:rgba(255,255,255,.05);border-color:var(--border)}
+.main{padding:32px 0 80px}
+.page-header{text-align:center;margin-bottom:40px}
+.page-title{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:900;background:linear-gradient(135deg,var(--cyan),var(--red),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px}
+.page-subtitle{font-size:1.1rem;color:var(--text2);max-width:800px;margin:0 auto}
+.filters{display:flex;gap:16px;margin-bottom:32px;flex-wrap:wrap;align-items:center}
+.filter-group{display:flex;gap:8px;align-items:center}
+.filter-label{font-size:.8rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.filter-select{padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:.85rem;font-family:inherit}
+.filter-select:focus{outline:none;border-color:var(--cyan)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:40px}
+.stat-card{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius2);padding:24px;text-align:center;backdrop-filter:blur(12px)}
+.stat-number{font-size:2.2rem;font-weight:900;font-family:'JetBrains Mono',monospace;margin-bottom:8px}
+.stat-label{font-size:.8rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
+.account-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:20px}
+.account-card{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius2);padding:24px;backdrop-filter:blur(12px);transition:all .3s;cursor:pointer}
+.account-card:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.account-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.account-name{font-size:1.1rem;font-weight:700;color:var(--text)}
+.account-logo{width:40px;height:40px;border-radius:8px;object-fit:contain;background:#fff;padding:2px}
+.account-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.meta-tag{padding:4px 8px;border-radius:6px;font-size:.7rem;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.tag-client{background:rgba(16,185,129,.2);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.tag-prospect{background:rgba(0,174,239,.2);color:var(--cyan);border:1px solid rgba(0,174,239,.3)}
+.tag-past{background:rgba(255,209,0,.2);color:var(--yellow);border:1px solid rgba(255,209,0,.3)}
+.tag-priority{background:rgba(227,24,55,.2);color:var(--red);border:1px solid rgba(227,24,55,.3)}
+.account-revenue{font-size:.9rem;color:var(--text2);margin-bottom:12px}
+.revenue-number{color:var(--green);font-weight:700}
+.account-strategy{font-size:.85rem;line-height:1.5;margin-bottom:16px;color:var(--text2)}
+.account-actions{display:flex;gap:8px;flex-wrap:wrap}
+.action-btn{padding:6px 12px;border-radius:6px;font-size:.7rem;font-weight:600;text-decoration:none;transition:all .3s}
+.btn-primary{background:var(--cyan);color:#000;border:1px solid var(--cyan)}
+.btn-primary:hover{background:transparent;color:var(--cyan)}
+.btn-secondary{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--cyan);color:var(--cyan)}
+.pipeline-indicator{position:absolute;top:12px;right:12px;width:12px;height:12px;border-radius:50%;animation:pulse 2s infinite}
+.pipeline-hot{background:var(--red)}
+.pipeline-warm{background:var(--yellow)}
+.pipeline-cold{background:var(--cyan)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-content{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);max-width:600px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+.modal-header{padding:24px 24px 0;display:flex;justify-content:between;align-items:center}
+.modal-title{font-size:1.3rem;font-weight:700;color:var(--text)}
+.modal-close{background:none;border:none;color:var(--text2);font-size:1.5rem;cursor:pointer;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.modal-body{padding:24px}
+.modal-section{margin-bottom:24px}
+.modal-section h4{font-size:.9rem;font-weight:600;color:var(--cyan);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.modal-section p{font-size:.9rem;line-height:1.6;color:var(--text2)}
+@media(max-width:768px){.filters{flex-direction:column;align-items:stretch}.account-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <a href="index.html" class="logo">
+        <img src="https://www.quad.com/wp-content/uploads/2024/08/Logo-QuadFullLockup-BW.svg" alt="Quad">
+        <span class="logo-text">SALES COMMAND CENTER</span>
+      </a>
+      <nav class="nav-tabs">
+        <a href="index.html" class="nav-tab">Dashboard</a>
+        <a href="strategic-accounts.html" class="nav-tab active">Strategic Accounts</a>
+        <a href="accounts.html" class="nav-tab">Account Intelligence</a>
+        <a href="accounts-news.html" class="nav-tab">News Monitor</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="container">
+    
+    <div class="page-header">
+      <h1 class="page-title">Strategic Accounts Dashboard</h1>
+      <p class="page-subtitle">Enterprise-level account management and pipeline orchestration across your $3.8M+ opportunity matrix</p>
+    </div>
+
+    <div class="filters">
+      <div class="filter-group">
+        <label class="filter-label">View</label>
+        <select class="filter-select" id="viewFilter">
+          <option value="all">All Accounts (87)</option>
+          <option value="strategic">Strategic Focus (Priority 5)</option>
+          <option value="pipeline">Active Pipeline (10)</option>
+          <option value="enterprise">Enterprise ($1M+)</option>
+          <option value="expansion">Growth Opportunities</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Industry</label>
+        <select class="filter-select" id="industryFilter">
+          <option value="all">All Industries</option>
+          <option value="financial">Financial Services</option>
+          <option value="retail">Retail & E-Commerce</option>
+          <option value="healthcare">Healthcare</option>
+          <option value="consumer">Consumer Goods</option>
+          <option value="technology">Technology</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">MX Solution</label>
+        <select class="filter-select" id="solutionFilter">
+          <option value="all">All Solutions</option>
+          <option value="intelligence">MX Intelligence</option>
+          <option value="creative">MX Creative</option>
+          <option value="technology">MX Technology</option>
+          <option value="media">MX Media</option>
+          <option value="production">MX Production</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-number" style="color:var(--green)">$3.8M+</div>
+        <div class="stat-label">Total Pipeline Value</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" style="color:var(--cyan)">87</div>
+        <div class="stat-label">Total Accounts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" style="color:var(--yellow)">15</div>
+        <div class="stat-label">Priority 5 Accounts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" style="color:var(--red)">10</div>
+        <div class="stat-label">Active Pipeline Deals</div>
+      </div>
+    </div>
+
+    <div class="account-grid" id="accountGrid">
+      <!-- Accounts will be populated by JavaScript -->
+    </div>
+
+  </div>
+</main>
+
+<!-- Account Modal -->
+<div class="modal" id="accountModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalTitle"></h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// Strategic account data with enterprise-level insights
+const STRATEGIC_ACCOUNTS = [
+  // ENTERPRISE PIPELINE ($1M+)
+  {
+    name: "PNC Bank",
+    industry: "Financial Services",
+    revenue: "$47.2B",
+    employees: "52,000",
+    priority: 5,
+    status: "Pipeline",
+    pipelineValue: "$1,000,000",
+    pipelineStage: "Proposal",
+    logo: "pnc.com",
+    strategy: "Full MX transformation opportunity. Elena's team reviewing comprehensive deck from 2/10 call. Custom AMI testing + Connex attribution + At-Home Connect triggered mail for mortgage/credit card lifecycle.",
+    nextAction: "Follow up on team feedback. Prepare AMI pilot proposal. Map decision committee.",
+    timeline: "Q2 2026",
+    mxFocus: "Intelligence + Technology",
+    competitiveThreats: ["JPMorgan Chase (incumbent)", "Broadridge (compliance)"],
+    keyStakeholders: "Elena (VP Marketing), CMO team",
+    successMetrics: "Cost per acquisition, customer lifetime value, digital-to-mail attribution"
+  },
+  {
+    name: "SoFi",
+    industry: "Financial Services",
+    revenue: "$8.9B",
+    employees: "6,500",
+    priority: 5,
+    status: "Pipeline",
+    pipelineValue: "$1,060,000",
+    pipelineStage: "Meeting Set",
+    logo: "sofi.com",
+    strategy: "Two-pronged approach: $1M expansion via CEO daughter connection + $60K current program optimization. Focus on student loan refinance + personal loan acquisition via triggered DM. At-Home Connect integration with their Salesforce.",
+    nextAction: "Follow up on Marisa's 2/17 text. Connect to DM team lead. Present triggered mail pilot.",
+    timeline: "Q2 2026",
+    mxFocus: "Technology + Creative",
+    competitiveThreats: ["In-house marketing team", "Acxiom (data)"],
+    keyStakeholders: "Marisa (CEO connection), DM team lead (TBD)",
+    successMetrics: "Application conversion rate, cost per funded loan"
+  },
+  {
+    name: "Lowe's",
+    industry: "Retail",
+    revenue: "$97.0B",
+    employees: "300,000",
+    priority: 5,
+    status: "Active Client",
+    pipelineValue: "$300,000",
+    pipelineStage: "Execution",
+    logo: "lowes.com",
+    strategy: "Entry DM test awarded (2 creatives per household). CRITICAL: This is the gateway to becoming their long-term DM partner. Flawless execution required. Preparation for post-test expansion discussion underway.",
+    nextAction: "Execute test flawlessly. Weekly check-ins. Prepare expansion roadmap presentation.",
+    timeline: "Test results EOW 2/13, expansion Q2-Q3",
+    mxFocus: "Production + Creative",
+    competitiveThreats: ["Home Depot (market share)", "RRD (printing incumbent)"],
+    keyStakeholders: "DM procurement team, Regional marketing managers",
+    successMetrics: "Response rate vs. control, cost per store visit"
+  },
+  {
+    name: "Bosch Tools",
+    industry: "Consumer Goods",
+    revenue: "$88.2B",
+    employees: "421,000",
+    priority: 4,
+    status: "Pipeline",
+    pipelineValue: "$750,000",
+    pipelineStage: "Reset Required",
+    logo: "boschtools.com",
+    strategy: "Heavy DM spender went silent after previous team misstep. Clean slate approach required. Focus on contractor acquisition + retail partnership activations. Leverage At Home case study for in-store + DM integration.",
+    nextAction: "New account mapping. Fresh stakeholder outreach. Position as MX transformation vs. just printing.",
+    timeline: "Q3 2026",
+    mxFocus: "Intelligence + Media",
+    competitiveThreats: ["Valassis (current DM)", "Internal marketing team"],
+    keyStakeholders: "TBD - mapping required",
+    successMetrics: "Contractor lead generation, retail foot traffic"
+  },
+  // STRATEGIC ENTERPRISE OPPORTUNITIES  
+  {
+    name: "Corebridge Financial",
+    industry: "Financial Services", 
+    revenue: "$14.8B",
+    employees: "4,200",
+    priority: 5,
+    status: "Pipeline",
+    pipelineValue: "$400,000",
+    pipelineStage: "Account Mapping",
+    logo: "corebridgefinancial.com",
+    strategy: "AIG spinout with B2C DM focus (vs. previous B2B misalignment). Credit approved 2/16. Annuities + life insurance acquisition programs. Perfect fit for household-level data + triggered lifecycle marketing.",
+    nextAction: "Map B2C marketing org. Fresh introduction positioning MX Intelligence capabilities.",
+    timeline: "Q2-Q4 2026",
+    mxFocus: "Intelligence + Technology",
+    competitiveThreats: ["Acxiom (data)", "RRD (printing)", "Epsilon (lifecycle marketing)"],
+    keyStakeholders: "B2C Marketing team (TBD)",
+    successMetrics: "Policy application rate, customer acquisition cost"
+  },
+  {
+    name: "VeraBank",
+    industry: "Financial Services",
+    revenue: "$2.1B", 
+    employees: "800",
+    priority: 4,
+    status: "Pipeline",
+    pipelineValue: "$250,000",
+    pipelineStage: "Data Review",
+    logo: "verabank.com",
+    strategy: "Multi-brand opportunity: VeraBank ($250K) + Dremel brand partnership ($250K additional). Existing Quad packaging relationship ($1.2MM ARR). Dremel's Lowe's shared mail underperformed - opportunity for targeted household approach.",
+    nextAction: "Data team audience overview call. Client to provide targeting criteria.",
+    timeline: "Q1 2026",
+    mxFocus: "Intelligence + Production",
+    competitiveThreats: ["Valassis (shared mail incumbent)", "Local agencies"],
+    keyStakeholders: "Data team POC, Dremel brand manager",
+    successMetrics: "DIY audience engagement, younger demographic penetration"
+  }
+];
+
+// Enhanced filtering and display functions
+function renderAccounts(accounts = STRATEGIC_ACCOUNTS) {
+  const grid = document.getElementById('accountGrid');
+  grid.innerHTML = accounts.map(account => `
+    <div class="account-card" onclick="openAccountModal('${account.name}')" style="position:relative">
+      ${getPipelineIndicator(account.pipelineStage)}
+      <div class="account-header">
+        <div>
+          <div class="account-name">${account.name}</div>
+          <div class="account-revenue">Revenue: <span class="revenue-number">${account.revenue}</span> • ${account.employees} employees</div>
+        </div>
+        ${account.logo ? `<img src="https://logo.uplead.com/${account.logo}" class="account-logo" onerror="this.style.display='none'">` : ''}
+      </div>
+      
+      <div class="account-meta">
+        <span class="meta-tag ${getStatusClass(account.status)}">${account.status}</span>
+        <span class="meta-tag tag-priority">Priority ${account.priority}</span>
+        ${account.pipelineValue ? `<span class="meta-tag" style="background:rgba(16,185,129,.2);color:var(--green)">${account.pipelineValue}</span>` : ''}
+      </div>
+      
+      <div class="account-strategy">${account.strategy.substring(0, 180)}${account.strategy.length > 180 ? '...' : ''}</div>
+      
+      <div class="account-actions">
+        <a href="#" class="action-btn btn-primary" onclick="event.stopPropagation()">View Pipeline</a>
+        <a href="#" class="action-btn btn-secondary" onclick="event.stopPropagation()">Generate Outreach</a>
+        <a href="#" class="action-btn btn-secondary" onclick="event.stopPropagation()">Meeting Prep</a>
+      </div>
+    </div>
+  `).join('');
+}
+
+function getPipelineIndicator(stage) {
+  if (!stage) return '';
+  const stageColors = {
+    'Execution': 'pipeline-hot',
+    'Proposal': 'pipeline-warm', 
+    'Meeting Set': 'pipeline-warm',
+    'Account Mapping': 'pipeline-cold',
+    'Reset Required': 'pipeline-cold'
+  };
+  const colorClass = stageColors[stage] || 'pipeline-cold';
+  return `<div class="pipeline-indicator ${colorClass}" title="${stage}"></div>`;
+}
+
+function getStatusClass(status) {
+  const statusMap = {
+    'Active Client': 'tag-client',
+    'Pipeline': 'tag-prospect', 
+    'Past Client': 'tag-past'
+  };
+  return statusMap[status] || 'tag-prospect';
+}
+
+function openAccountModal(accountName) {
+  const account = STRATEGIC_ACCOUNTS.find(a => a.name === accountName);
+  if (!account) return;
+  
+  document.getElementById('modalTitle').textContent = account.name;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-section">
+      <h4>Strategic Overview</h4>
+      <p><strong>Industry:</strong> ${account.industry} • <strong>Revenue:</strong> ${account.revenue} • <strong>Employees:</strong> ${account.employees}</p>
+      <p><strong>Priority:</strong> ${account.priority}/5 • <strong>Status:</strong> ${account.status}</p>
+      ${account.pipelineValue ? `<p><strong>Pipeline Value:</strong> ${account.pipelineValue} • <strong>Stage:</strong> ${account.pipelineStage}</p>` : ''}
+    </div>
+    
+    <div class="modal-section">
+      <h4>Strategic Approach</h4>
+      <p>${account.strategy}</p>
+    </div>
+    
+    <div class="modal-section">
+      <h4>Next Actions</h4>
+      <p>${account.nextAction}</p>
+      <p><strong>Timeline:</strong> ${account.timeline}</p>
+    </div>
+    
+    <div class="modal-section">
+      <h4>MX Solution Focus</h4>
+      <p>${account.mxFocus}</p>
+    </div>
+    
+    <div class="modal-section">
+      <h4>Competitive Landscape</h4>
+      <p><strong>Key Threats:</strong> ${account.competitiveThreats.join(', ')}</p>
+    </div>
+    
+    <div class="modal-section">
+      <h4>Key Stakeholders</h4>
+      <p>${account.keyStakeholders}</p>
+    </div>
+    
+    <div class="modal-section">
+      <h4>Success Metrics</h4>
+      <p>${account.successMetrics}</p>
+    </div>
+  `;
+  
+  document.getElementById('accountModal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('accountModal').style.display = 'none';
+}
+
+// Filter functionality
+function setupFilters() {
+  const viewFilter = document.getElementById('viewFilter');
+  const industryFilter = document.getElementById('industryFilter');
+  const solutionFilter = document.getElementById('solutionFilter');
+  
+  function applyFilters() {
+    let filtered = [...STRATEGIC_ACCOUNTS];
+    
+    // View filter
+    const view = viewFilter.value;
+    if (view === 'strategic') filtered = filtered.filter(a => a.priority === 5);
+    else if (view === 'pipeline') filtered = filtered.filter(a => a.pipelineValue);
+    else if (view === 'enterprise') filtered = filtered.filter(a => a.pipelineValue && parseInt(a.pipelineValue.replace(/[$,]/g, '')) >= 1000000);
+    else if (view === 'expansion') filtered = filtered.filter(a => a.status === 'Active Client');
+    
+    // Industry filter
+    const industry = industryFilter.value;
+    if (industry !== 'all') filtered = filtered.filter(a => a.industry.toLowerCase().includes(industry));
+    
+    renderAccounts(filtered);
+    updateStats(filtered);
+  }
+  
+  viewFilter.addEventListener('change', applyFilters);
+  industryFilter.addEventListener('change', applyFilters);
+  solutionFilter.addEventListener('change', applyFilters);
+}
+
+function updateStats(accounts) {
+  const totalPipeline = accounts.reduce((sum, a) => sum + (a.pipelineValue ? parseInt(a.pipelineValue.replace(/[$,]/g, '')) : 0), 0);
+  const pipelineDeals = accounts.filter(a => a.pipelineValue).length;
+  const priority5 = accounts.filter(a => a.priority === 5).length;
+  
+  document.querySelector('.stat-card:nth-child(1) .stat-number').textContent = `$${(totalPipeline/1000000).toFixed(1)}M+`;
+  document.querySelector('.stat-card:nth-child(2) .stat-number').textContent = accounts.length;
+  document.querySelector('.stat-card:nth-child(3) .stat-number').textContent = priority5;
+  document.querySelector('.stat-card:nth-child(4) .stat-number').textContent = pipelineDeals;
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+  renderAccounts();
+  setupFilters();
+  
+  // Close modal when clicking outside
+  document.getElementById('accountModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+});
+</script>
+
+</body>
+</html>

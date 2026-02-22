@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>War Room 2.0 - QUAD Sales Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#08090d;--bg2:#0f1117;--bg3:#161822;--bg4:#1e2030;--text:#eaedf3;--text2:#8b8fa3;--text3:#555a72;--red:#E31837;--cyan:#00AEEF;--yellow:#FFD100;--green:#10B981;--orange:#F59E0B;--purple:#a855f7;--border:rgba(255,255,255,.08);--glass:rgba(15,17,23,.85);--radius:12px;--radius2:16px;--shadow:0 8px 32px rgba(0,0,0,.3)}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  line-height:1.6;
+  overflow-x:auto;
+  min-height:100vh;
+  position:relative;
+}
+
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle at 20% 80%, rgba(227,24,55,.1) 0%, transparent 50%), 
+             radial-gradient(circle at 80% 20%, rgba(0,174,239,.08) 0%, transparent 50%),
+             radial-gradient(circle at 40% 40%, rgba(255,209,0,.04) 0%, transparent 50%);
+  pointer-events:none;
+  z-index:0;
+}
+
+.container{
+  max-width:1800px;
+  margin:0 auto;
+  padding:20px;
+  position:relative;
+  z-index:1;
+}
+
+/* WAR ROOM HEADER */
+.war-header{
+  background:linear-gradient(135deg, var(--glass), rgba(227,24,55,.05));
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  padding:32px;
+  margin-bottom:24px;
+  backdrop-filter:blur(24px);
+  position:relative;
+  overflow:hidden;
+}
+
+.war-header::before{
+  content:'Q';
+  position:absolute;
+  top:-20px;
+  right:-20px;
+  font-size:8rem;
+  font-weight:900;
+  color:var(--red);
+  opacity:.03;
+  font-family:'JetBrains Mono',monospace;
+}
+
+.war-header h1{
+  font-family:'Playfair Display',serif;
+  font-size:3rem;
+  background:linear-gradient(135deg, #fff, var(--cyan), var(--red));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin-bottom:8px;
+  font-weight:800;
+}
+
+.war-subtitle{
+  color:var(--text2);
+  font-size:1.1rem;
+  margin-bottom:24px;
+}
+
+.war-stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
+  gap:16px;
+  margin-top:24px;
+}
+
+.stat-box{
+  background:rgba(255,255,255,.02);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px;
+  text-align:center;
+  position:relative;
+}
+
+.stat-box::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:2px;
+  background:linear-gradient(90deg, var(--red), var(--cyan), var(--yellow));
+  opacity:.6;
+}
+
+.stat-value{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.8rem;
+  font-weight:700;
+  color:var(--cyan);
+  margin-bottom:4px;
+}
+
+.stat-label{
+  font-size:.8rem;
+  color:var(--text2);
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+
+/* PIPELINE BOARD */
+.pipeline-board{
+  display:grid;
+  grid-template-columns:repeat(6, 1fr);
+  gap:16px;
+  margin-bottom:32px;
+  min-height:700px;
+}
+
+.pipeline-column{
+  background:var(--glass);
+  border:2px solid var(--border);
+  border-radius:var(--radius2);
+  backdrop-filter:blur(24px);
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  overflow:hidden;
+  transition:all .3s ease;
+}
+
+.pipeline-column.drag-over{
+  border-color:var(--cyan);
+  background:rgba(0,174,239,.08);
+  transform:scale(1.02);
+  box-shadow:0 0 40px rgba(0,174,239,.2);
+}
+
+.column-header{
+  padding:20px 16px;
+  border-bottom:1px solid var(--border);
+  position:relative;
+  backdrop-filter:blur(20px);
+}
+
+.column-header::after{
+  content:'';
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+  height:3px;
+  background:var(--stage-color, var(--cyan));
+  opacity:.6;
+}
+
+.column-title{
+  font-size:.9rem;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  margin-bottom:8px;
+  color:var(--stage-color, var(--cyan));
+}
+
+.column-stats{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.column-value{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.1rem;
+  font-weight:600;
+  color:var(--stage-color, var(--cyan));
+}
+
+.column-count{
+  font-size:.8rem;
+  color:var(--text2);
+  background:rgba(255,255,255,.05);
+  padding:2px 8px;
+  border-radius:12px;
+}
+
+.column-content{
+  flex:1;
+  padding:12px;
+  min-height:500px;
+  position:relative;
+}
+
+.column-content.empty::before{
+  content:'Drop deals here';
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  color:var(--text3);
+  font-size:.85rem;
+  font-style:italic;
+  opacity:.6;
+  pointer-events:none;
+}
+
+/* DEAL CARDS */
+.deal-card{
+  background:linear-gradient(135deg, var(--bg3), var(--bg4));
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px;
+  margin-bottom:12px;
+  cursor:grab;
+  transition:all .3s cubic-bezier(.25,.8,.25,1);
+  position:relative;
+  overflow:hidden;
+  user-select:none;
+}
+
+.deal-card::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:3px;
+  background:linear-gradient(90deg, var(--red), var(--cyan), var(--yellow));
+  opacity:.4;
+  transition:.3s;
+}
+
+.deal-card:hover{
+  transform:translateY(-4px) scale(1.02);
+  box-shadow:var(--shadow);
+  border-color:var(--cyan);
+}
+
+.deal-card:hover::before{
+  opacity:.8;
+}
+
+.deal-card.dragging{
+  opacity:.7;
+  transform:rotate(8deg) scale(1.05);
+  z-index:1000;
+  box-shadow:0 20px 60px rgba(0,0,0,.4);
+  border-color:var(--cyan);
+}
+
+.deal-card.dragging:hover{
+  transform:rotate(8deg) scale(1.05);
+}
+
+.deal-card:active{
+  cursor:grabbing;
+}
+
+.deal-company{
+  font-size:1rem;
+  font-weight:700;
+  margin-bottom:4px;
+  color:var(--text);
+}
+
+.deal-contact{
+  font-size:.8rem;
+  color:var(--text2);
+  margin-bottom:8px;
+}
+
+.deal-value{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.9rem;
+  font-weight:600;
+  color:var(--green);
+  margin-bottom:8px;
+}
+
+.deal-progress{
+  font-size:.75rem;
+  color:var(--text2);
+  background:rgba(255,255,255,.05);
+  padding:4px 8px;
+  border-radius:12px;
+  display:inline-block;
+  margin-bottom:8px;
+}
+
+.deal-tags{
+  display:flex;
+  gap:4px;
+  flex-wrap:wrap;
+}
+
+.deal-tag{
+  font-size:.7rem;
+  padding:2px 6px;
+  border-radius:8px;
+  background:rgba(0,174,239,.15);
+  color:var(--cyan);
+  border:1px solid rgba(0,174,239,.3);
+}
+
+/* STAGE COLORS */
+.prospecting{--stage-color:var(--orange)}
+.demo{--stage-color:var(--cyan)}  
+.proposal{--stage-color:var(--purple)}
+.negotiation{--stage-color:var(--yellow)}
+.closed-won{--stage-color:var(--green)}
+.closed-lost{--stage-color:var(--red)}
+
+/* CELEBRATION OVERLAY */
+.celebration-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  z-index:10000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter:blur(10px);
+  flex-direction:column;
+}
+
+.celebration-content{
+  text-align:center;
+  animation:celebrateIn 1s ease-out;
+}
+
+.celebration-emoji{
+  font-size:8rem;
+  margin-bottom:24px;
+  animation:bounce 2s infinite;
+}
+
+.celebration-text{
+  font-family:'Playfair Display',serif;
+  font-size:3rem;
+  font-weight:800;
+  background:linear-gradient(135deg, var(--green), var(--yellow), var(--cyan));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin-bottom:16px;
+}
+
+.celebration-deal{
+  font-size:1.5rem;
+  color:var(--text);
+  margin-bottom:24px;
+}
+
+.celebration-value{
+  font-family:'JetBrains Mono',monospace;
+  font-size:2rem;
+  color:var(--green);
+  font-weight:700;
+  margin-bottom:32px;
+}
+
+.celebration-close{
+  background:linear-gradient(135deg, var(--red), var(--orange));
+  color:#fff;
+  border:none;
+  padding:12px 24px;
+  border-radius:25px;
+  font-size:.9rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:.3s;
+}
+
+.celebration-close:hover{
+  transform:scale(1.05);
+  box-shadow:0 8px 24px rgba(227,24,55,.3);
+}
+
+/* CONFETTI */
+.confetti{
+  position:absolute;
+  width:10px;
+  height:10px;
+  background:var(--yellow);
+  animation:confettiFall 3s linear infinite;
+}
+
+.confetti:nth-child(odd){background:var(--red)}
+.confetti:nth-child(3n){background:var(--cyan)}
+.confetti:nth-child(4n){background:var(--green)}
+.confetti:nth-child(5n){background:var(--purple)}
+
+/* ANIMATIONS */
+@keyframes celebrateIn{
+  0%{transform:scale(0.5);opacity:0}
+  50%{transform:scale(1.1)}
+  100%{transform:scale(1);opacity:1}
+}
+
+@keyframes bounce{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-20px)}
+}
+
+@keyframes confettiFall{
+  0%{transform:translateY(-100vh) rotate(0deg);opacity:1}
+  100%{transform:translateY(100vh) rotate(720deg);opacity:0}
+}
+
+@keyframes pulse{
+  0%,100%{opacity:1}
+  50%{opacity:.4}
+}
+
+/* RESPONSIVE */
+@media(max-width:1400px){
+  .pipeline-board{grid-template-columns:repeat(3,1fr)}
+}
+
+@media(max-width:900px){
+  .pipeline-board{grid-template-columns:repeat(2,1fr)}
+  .war-header h1{font-size:2rem}
+}
+
+@media(max-width:600px){
+  .pipeline-board{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- WAR ROOM HEADER -->
+  <div class="war-header">
+    <h1>🎯 War Room 2.0</h1>
+    <p class="war-subtitle">Interactive Pipeline Command Center • Drag & Drop Your Way to Victory</p>
+    
+    <div class="war-stats">
+      <div class="stat-box">
+        <div class="stat-value" id="totalValue">$4.96M</div>
+        <div class="stat-label">Total Pipeline</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="totalDeals">11</div>
+        <div class="stat-label">Top Opportunities</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="winRate">100%</div>
+        <div class="stat-label">Win Rate</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="avgDeal">$451K</div>
+        <div class="stat-label">Avg Deal Size</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="closedWon">$1.17M</div>
+        <div class="stat-label">Closed Won YTD</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="monthlyGoal">$2M</div>
+        <div class="stat-label">Q1 Goal</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIPELINE BOARD -->
+  <div class="pipeline-board">
+    <!-- PROSPECTING -->
+    <div class="pipeline-column prospecting" data-stage="prospecting">
+      <div class="column-header">
+        <div class="column-title">🎯 Prospecting</div>
+        <div class="column-stats">
+          <div class="column-value">$940K</div>
+          <div class="column-count">3 deals</div>
+        </div>
+      </div>
+      <div class="column-content" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    </div>
+
+    <!-- DEMO SCHEDULED -->
+    <div class="pipeline-column demo" data-stage="demo">
+      <div class="column-header">
+        <div class="column-title">🚀 Demo Scheduled</div>
+        <div class="column-stats">
+          <div class="column-value">$775K</div>
+          <div class="column-count">2 deals</div>
+        </div>
+      </div>
+      <div class="column-content" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    </div>
+
+    <!-- PROPOSAL -->
+    <div class="pipeline-column proposal" data-stage="proposal">
+      <div class="column-header">
+        <div class="column-title">📋 Proposal</div>
+        <div class="column-stats">
+          <div class="column-value">$2M</div>
+          <div class="column-count">2 deals</div>
+        </div>
+      </div>
+      <div class="column-content" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    </div>
+
+    <!-- NEGOTIATION -->
+    <div class="pipeline-column negotiation" data-stage="negotiation">
+      <div class="column-header">
+        <div class="column-title">⚡ Negotiation</div>
+        <div class="column-stats">
+          <div class="column-value">$80K</div>
+          <div class="column-count">1 deal</div>
+        </div>
+      </div>
+      <div class="column-content" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    </div>
+
+    <!-- CLOSED WON -->
+    <div class="pipeline-column closed-won" data-stage="closed-won">
+      <div class="column-header">
+        <div class="column-title">🏆 Closed Won</div>
+        <div class="column-stats">
+          <div class="column-value">$1.17M</div>
+          <div class="column-count">3 deals</div>
+        </div>
+      </div>
+      <div class="column-content" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    </div>
+
+    <!-- CLOSED LOST -->
+    <div class="pipeline-column closed-lost" data-stage="closed-lost">
+      <div class="column-header">
+        <div class="column-title">❌ Closed Lost</div>
+        <div class="column-stats">
+          <div class="column-value">$0</div>
+          <div class="column-count">0 deals</div>
+        </div>
+      </div>
+      <div class="column-content" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CELEBRATION OVERLAY -->
+<div class="celebration-overlay" id="celebrationOverlay">
+  <div class="celebration-content">
+    <div class="celebration-emoji">🎉</div>
+    <div class="celebration-text">DEAL CLOSED!</div>
+    <div class="celebration-deal" id="celebrationDeal">Amazing Company Inc.</div>
+    <div class="celebration-value" id="celebrationValue">$125,000</div>
+    <button class="celebration-close" onclick="closeCelebration()">Let's Close More! 🚀</button>
+  </div>
+</div>
+
+<script>
+// EMMETT'S ACTUAL TOP OPPORTUNITIES
+const sampleDeals = [
+  // PROSPECTING (Deals that need reset/re-engagement)
+  {id:'d1',company:'Bosch Tools',contact:'Previous Contact (Reset Needed)',value:'$750K',progress:'Account Reset Required',tags:['Tools','B2C','DM Heavy'],stage:'prospecting'},
+  {id:'d2',company:'First Savings Financial',contact:'Contact TBD',value:'$150K',progress:'Re-engagement Week of 2/16',tags:['Banking','Community Bank'],stage:'prospecting'},
+  {id:'d3',company:'Mattress Firm',contact:'Previous Contact',value:'$40K',progress:'Following up 2/18',tags:['Retail','Low Volume'],stage:'prospecting'},
+  
+  // DEMO SCHEDULED (Active opportunities with next steps defined)
+  {id:'d4',company:'VeraBank (Dremel)',contact:'Marketing Team',value:'$375K',progress:'Data Team Call Week of 1/26',tags:['Banking','DIY','Existing Relationship'],stage:'demo'},
+  {id:'d5',company:'Corebridge (ex-AIG)',contact:'B2C Marketing Leadership',value:'$400K',progress:'Account Mapping in Progress',tags:['Insurance','B2C','DM Heavy'],stage:'demo'},
+  
+  // PROPOSAL (Decks sent, awaiting feedback)  
+  {id:'d6',company:'PNC Bank',contact:'Elena (Team Review)',value:'$1M',progress:'Deck Shared 2/10 - Awaiting Feedback',tags:['Major Bank','AMI','Analytics'],stage:'proposal'},
+  {id:'d7',company:'SoFi (Lending/Investment)',contact:'Marisa (CEO Daughter)',value:'$1M',progress:'Custom Deck Draft Due Thursday',tags:['Fintech','Lending DM','Investment DM'],stage:'proposal'},
+  
+  // NEGOTIATION (Advanced stages, final terms)
+  {id:'d8',company:'SoFi (Current)',contact:'Steve Addis',value:'$80K',progress:'Digital Targeting Follow-up',tags:['Fintech','Ongoing Client'],stage:'negotiation'},
+  
+  // CLOSED WON (Successfully won deals)
+  {id:'d9',company:'Lowe\'s',contact:'Marketing Team',value:'$450K',progress:'Entry DM Job Awarded - Execute Flawlessly!',tags:['Home Improvement','Data','Creative','AMI'],stage:'closed-won'},
+  
+  // Additional pipeline deals to reach realistic volumes
+  {id:'d10',company:'Liberty Debt Relief',contact:'Current Team',value:'$420K',progress:'Ongoing - 400K Snap Paks/Week',tags:['Financial Services','Active Client'],stage:'closed-won'},
+  {id:'d11',company:'PureTalk Holdings',contact:'Account Team',value:'$295K',progress:'$24,692 TTM - Growing',tags:['Telecom','Active Client'],stage:'closed-won'}
+];
+
+let draggedElement = null;
+
+// INITIALIZE PIPELINE
+function initializePipeline() {
+  // Clear all columns
+  document.querySelectorAll('.column-content').forEach(content => {
+    content.innerHTML = '';
+  });
+  
+  // Add deals to their respective stages
+  sampleDeals.forEach(deal => {
+    const dealCard = createDealCard(deal);
+    const targetColumn = document.querySelector(`[data-stage="${deal.stage}"] .column-content`);
+    if (targetColumn) {
+      targetColumn.appendChild(dealCard);
+    }
+  });
+  
+  // Update empty states
+  updateEmptyStates();
+}
+
+// CREATE DEAL CARD
+function createDealCard(deal) {
+  const card = document.createElement('div');
+  card.className = 'deal-card';
+  card.draggable = true;
+  card.dataset.dealId = deal.id;
+  card.dataset.dealValue = deal.value;
+  card.dataset.dealCompany = deal.company;
+  
+  card.innerHTML = `
+    <div class="deal-company">${deal.company}</div>
+    <div class="deal-contact">${deal.contact}</div>
+    <div class="deal-value">${deal.value}</div>
+    <div class="deal-progress">${deal.progress}</div>
+    <div class="deal-tags">
+      ${deal.tags.map(tag => `<span class="deal-tag">${tag}</span>`).join('')}
+    </div>
+  `;
+  
+  // Add drag event listeners
+  card.addEventListener('dragstart', dragStart);
+  card.addEventListener('dragend', dragEnd);
+  
+  return card;
+}
+
+// DRAG AND DROP FUNCTIONS
+function dragStart(e) {
+  draggedElement = e.target;
+  e.target.classList.add('dragging');
+  
+  // Add visual feedback
+  document.querySelectorAll('.pipeline-column').forEach(col => {
+    col.style.transition = 'all 0.3s ease';
+  });
+}
+
+function dragEnd(e) {
+  e.target.classList.remove('dragging');
+  draggedElement = null;
+  
+  // Remove visual feedback
+  document.querySelectorAll('.pipeline-column').forEach(col => {
+    col.classList.remove('drag-over');
+  });
+}
+
+function allowDrop(e) {
+  e.preventDefault();
+  
+  // Add visual feedback to column
+  const column = e.currentTarget.closest('.pipeline-column');
+  if (column && draggedElement) {
+    column.classList.add('drag-over');
+  }
+}
+
+function drop(e) {
+  e.preventDefault();
+  
+  const column = e.currentTarget.closest('.pipeline-column');
+  const newStage = column.dataset.stage;
+  
+  if (draggedElement) {
+    // Add to new column
+    e.currentTarget.appendChild(draggedElement);
+    
+    // Update deal data
+    const dealId = draggedElement.dataset.dealId;
+    const deal = sampleDeals.find(d => d.id === dealId);
+    if (deal) {
+      deal.stage = newStage;
+      updateDealProgress(deal, newStage);
+    }
+    
+    // Check for closed won celebration
+    if (newStage === 'closed-won') {
+      triggerCelebration(
+        draggedElement.dataset.dealCompany,
+        draggedElement.dataset.dealValue
+      );
+    }
+    
+    // Update empty states and stats
+    updateEmptyStates();
+    updateStats();
+  }
+  
+  // Remove visual feedback
+  column.classList.remove('drag-over');
+}
+
+// UPDATE DEAL PROGRESS BASED ON STAGE
+function updateDealProgress(deal, stage) {
+  const progressMap = {
+    'prospecting': 'Active Prospecting',
+    'demo': 'Demo Scheduled', 
+    'proposal': 'Proposal Phase',
+    'negotiation': 'Final Negotiations',
+    'closed-won': 'Deal Closed! 🎉',
+    'closed-lost': 'Opportunity Lost'
+  };
+  
+  deal.progress = progressMap[stage] || deal.progress;
+  
+  // Update the card display
+  const card = document.querySelector(`[data-deal-id="${deal.id}"]`);
+  if (card) {
+    const progressEl = card.querySelector('.deal-progress');
+    if (progressEl) {
+      progressEl.textContent = deal.progress;
+    }
+  }
+}
+
+// UPDATE EMPTY STATES
+function updateEmptyStates() {
+  document.querySelectorAll('.column-content').forEach(content => {
+    if (content.children.length === 0) {
+      content.classList.add('empty');
+    } else {
+      content.classList.remove('empty');
+    }
+  });
+}
+
+// UPDATE STATISTICS
+function updateStats() {
+  const stages = ['prospecting', 'demo', 'proposal', 'negotiation', 'closed-won', 'closed-lost'];
+  
+  stages.forEach(stage => {
+    const column = document.querySelector(`[data-stage="${stage}"]`);
+    const deals = column.querySelectorAll('.deal-card');
+    const count = deals.length;
+    
+    // Calculate total value
+    let totalValue = 0;
+    deals.forEach(deal => {
+      const value = deal.dataset.dealValue.replace(/[$K,]/g, '');
+      totalValue += parseInt(value) || 0;
+    });
+    
+    // Update column stats
+    const valueEl = column.querySelector('.column-value');
+    const countEl = column.querySelector('.column-count');
+    
+    if (valueEl) valueEl.textContent = `$${totalValue}K`;
+    if (countEl) countEl.textContent = `${count} deals`;
+  });
+  
+  // Update header stats
+  updateHeaderStats();
+}
+
+// UPDATE HEADER STATISTICS
+function updateHeaderStats() {
+  const allDeals = document.querySelectorAll('.deal-card');
+  let totalValue = 0;
+  
+  allDeals.forEach(deal => {
+    const value = deal.dataset.dealValue.replace(/[$K,]/g, '');
+    totalValue += parseInt(value) || 0;
+  });
+  
+  const closedWonDeals = document.querySelectorAll('[data-stage="closed-won"] .deal-card');
+  let closedWonValue = 0;
+  
+  closedWonDeals.forEach(deal => {
+    const value = deal.dataset.dealValue.replace(/[$K,]/g, '');
+    closedWonValue += parseInt(value) || 0;
+  });
+  
+  // Update displays
+  document.getElementById('totalValue').textContent = `$${(totalValue/1000).toFixed(1)}M`;
+  document.getElementById('totalDeals').textContent = allDeals.length;
+  document.getElementById('closedWon').textContent = `$${closedWonValue}K`;
+  
+  // Calculate win rate
+  const totalClosed = document.querySelectorAll('[data-stage="closed-won"] .deal-card').length + document.querySelectorAll('[data-stage="closed-lost"] .deal-card').length;
+  const winRate = totalClosed > 0 ? Math.round((closedWonDeals.length / totalClosed) * 100) : 0;
+  document.getElementById('winRate').textContent = `${winRate}%`;
+}
+
+// CELEBRATION SYSTEM
+function triggerCelebration(company, value) {
+  const overlay = document.getElementById('celebrationOverlay');
+  const dealEl = document.getElementById('celebrationDeal');
+  const valueEl = document.getElementById('celebrationValue');
+  
+  dealEl.textContent = company;
+  valueEl.textContent = value;
+  
+  overlay.style.display = 'flex';
+  
+  // Add confetti
+  createConfetti();
+  
+  // Play celebration sound (if you want to add audio)
+  // playWinSound();
+  
+  // Auto-close after 5 seconds
+  setTimeout(closeCelebration, 5000);
+}
+
+function closeCelebration() {
+  const overlay = document.getElementById('celebrationOverlay');
+  overlay.style.display = 'none';
+  
+  // Clear confetti
+  document.querySelectorAll('.confetti').forEach(c => c.remove());
+}
+
+function createConfetti() {
+  const colors = ['#E31837', '#00AEEF', '#FFD100', '#10B981', '#a855f7'];
+  
+  for (let i = 0; i < 50; i++) {
+    setTimeout(() => {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      confetti.style.left = Math.random() * 100 + 'vw';
+      confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.animationDelay = Math.random() * 3 + 's';
+      confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+      document.body.appendChild(confetti);
+      
+      // Remove after animation
+      setTimeout(() => confetti.remove(), 5000);
+    }, i * 50);
+  }
+}
+
+// PREVENT DRAGOVER ON OTHER ELEMENTS
+document.addEventListener('dragover', (e) => {
+  if (!e.target.closest('.column-content')) {
+    e.preventDefault();
+  }
+});
+
+// INITIALIZE ON LOAD
+document.addEventListener('DOMContentLoaded', () => {
+  initializePipeline();
+  updateStats();
+  
+  // Add some welcome messaging
+  console.log('🎯 War Room 2.0 Loaded! Ready to drag and drop your way to victory!');
+});
+</script>
+
+</body>
+</html>

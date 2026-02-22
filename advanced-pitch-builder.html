@@ -1,0 +1,2758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Pitch Builder — Enterprise Deck Generation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#08090d;--bg2:#0f1117;--bg3:#161822;--bg4:#1e2030;--text:#eaedf3;--text2:#8b8fa3;--text3:#555a72;--red:#E31837;--cyan:#00AEEF;--yellow:#FFD100;--green:#10B981;--orange:#F59E0B;--purple:#a855f7;--border:rgba(255,255,255,.08);--glass:rgba(15,17,23,.85);--radius:12px;--radius2:16px;--shadow:0 8px 32px rgba(0,0,0,.3)}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  line-height:1.6;
+  overflow-x:hidden;
+  min-height:100vh;
+}
+
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle at 20% 80%, rgba(227,24,55,.08) 0%, transparent 50%), 
+             radial-gradient(circle at 80% 20%, rgba(0,174,239,.06) 0%, transparent 50%),
+             radial-gradient(circle at 40% 40%, rgba(255,209,0,.03) 0%, transparent 50%);
+  pointer-events:none;
+  z-index:0;
+}
+
+.container{
+  max-width:1600px;
+  margin:0 auto;
+  padding:24px;
+  position:relative;
+  z-index:1;
+}
+
+/* ENTERPRISE HEADER */
+.enterprise-header{
+  background:linear-gradient(135deg, var(--glass), rgba(227,24,55,.04));
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  padding:32px;
+  margin-bottom:24px;
+  backdrop-filter:blur(24px);
+  position:relative;
+  overflow:hidden;
+}
+
+.enterprise-header::before{
+  content:'Q';
+  position:absolute;
+  top:-20px;
+  right:-20px;
+  font-size:8rem;
+  font-weight:900;
+  color:var(--red);
+  opacity:.02;
+  font-family:'JetBrains Mono',monospace;
+}
+
+.enterprise-header h1{
+  font-family:'Playfair Display',serif;
+  font-size:2.8rem;
+  background:linear-gradient(135deg, #fff, var(--cyan), var(--purple));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin-bottom:12px;
+  font-weight:800;
+}
+
+.enterprise-subtitle{
+  color:var(--text2);
+  font-size:1.1rem;
+  margin-bottom:24px;
+  border-left:3px solid var(--cyan);
+  padding-left:16px;
+}
+
+.enterprise-stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+  gap:16px;
+}
+
+.stat-pill{
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--border);
+  border-radius:25px;
+  padding:12px 16px;
+  text-align:center;
+  font-size:.85rem;
+}
+
+.stat-pill .value{
+  font-weight:700;
+  color:var(--cyan);
+  margin-right:4px;
+}
+
+/* BUILDER INTERFACE */
+.builder-workspace{
+  display:grid;
+  grid-template-columns:420px 1fr;
+  gap:24px;
+  min-height:800px;
+}
+
+.builder-panel{
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  backdrop-filter:blur(24px);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+/* INPUT PANEL */
+.input-header{
+  background:linear-gradient(135deg, var(--bg2), var(--bg3));
+  padding:24px;
+  border-bottom:1px solid var(--border);
+}
+
+.input-title{
+  font-size:1.2rem;
+  font-weight:700;
+  margin-bottom:8px;
+  color:var(--text);
+}
+
+.input-description{
+  font-size:.9rem;
+  color:var(--text2);
+  line-height:1.5;
+}
+
+.input-tabs{
+  display:flex;
+  background:var(--bg3);
+  border-bottom:1px solid var(--border);
+}
+
+.input-tab{
+  flex:1;
+  padding:16px 12px;
+  text-align:center;
+  font-size:.85rem;
+  font-weight:600;
+  color:var(--text2);
+  cursor:pointer;
+  transition:.3s;
+  border-bottom:3px solid transparent;
+  position:relative;
+}
+
+.input-tab::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:1px;
+  background:var(--cyan);
+  opacity:0;
+  transition:.3s;
+}
+
+.input-tab.active{
+  color:var(--cyan);
+  border-bottom-color:var(--cyan);
+  background:var(--bg4);
+}
+
+.input-tab.active::before{
+  opacity:.6;
+}
+
+.tab-content{
+  flex:1;
+  padding:24px;
+  overflow-y:auto;
+}
+
+.tab-panel{
+  display:none;
+}
+
+.tab-panel.active{
+  display:block;
+}
+
+/* FORM ELEMENTS */
+.form-group{
+  margin-bottom:24px;
+}
+
+.form-label{
+  display:block;
+  font-size:.9rem;
+  font-weight:600;
+  margin-bottom:8px;
+  color:var(--text);
+  position:relative;
+}
+
+.form-label.required::after{
+  content:'*';
+  color:var(--red);
+  margin-left:4px;
+}
+
+.form-control{
+  width:100%;
+  padding:12px 16px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:var(--text);
+  font-size:.9rem;
+  font-family:'Inter',sans-serif;
+  transition:.3s;
+}
+
+.form-control:focus{
+  outline:none;
+  border-color:var(--cyan);
+  box-shadow:0 0 0 3px rgba(0,174,239,.1);
+}
+
+.form-control.large{
+  min-height:100px;
+  resize:vertical;
+}
+
+.form-help{
+  font-size:.8rem;
+  color:var(--text3);
+  margin-top:4px;
+  font-style:italic;
+}
+
+/* DECK TYPE CARDS */
+.deck-type-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.deck-type-card{
+  padding:16px;
+  background:var(--bg4);
+  border:1px solid var(--border);
+  border-radius:8px;
+  cursor:pointer;
+  transition:.3s;
+  position:relative;
+}
+
+.deck-type-card::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:2px;
+  background:var(--cyan);
+  opacity:0;
+  transition:.3s;
+}
+
+.deck-type-card:hover{
+  border-color:var(--cyan);
+  transform:translateY(-1px);
+}
+
+.deck-type-card:hover::before{
+  opacity:.6;
+}
+
+.deck-type-card.selected{
+  border-color:var(--green);
+  background:rgba(16,185,129,.08);
+}
+
+.deck-type-card.selected::before{
+  background:var(--green);
+  opacity:1;
+}
+
+.card-title{
+  font-weight:600;
+  margin-bottom:6px;
+  font-size:.9rem;
+}
+
+.card-description{
+  font-size:.8rem;
+  color:var(--text2);
+  line-height:1.4;
+}
+
+.card-slides{
+  font-size:.75rem;
+  color:var(--text3);
+  margin-top:8px;
+  font-style:italic;
+}
+
+/* GENERATE BUTTON */
+.generate-section{
+  padding:24px;
+  border-top:1px solid var(--border);
+  background:var(--bg2);
+}
+
+.generate-btn{
+  width:100%;
+  padding:16px;
+  background:linear-gradient(135deg, var(--red), var(--orange), var(--cyan));
+  color:#fff;
+  border:none;
+  border-radius:12px;
+  font-weight:700;
+  font-size:1rem;
+  cursor:pointer;
+  transition:.3s;
+  position:relative;
+  overflow:hidden;
+}
+
+.generate-btn::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(45deg, transparent, rgba(255,255,255,.1), transparent);
+  transform:translateX(-100%);
+  transition:.6s;
+}
+
+.generate-btn:hover::before{
+  transform:translateX(100%);
+}
+
+.generate-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 40px rgba(227,24,55,.3);
+}
+
+.generate-btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+  transform:none;
+}
+
+/* OUTPUT PANEL */
+.output-header{
+  background:linear-gradient(135deg, var(--bg2), var(--bg3));
+  padding:20px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.output-title{
+  font-weight:700;
+  font-size:1.1rem;
+}
+
+.output-actions{
+  display:flex;
+  gap:8px;
+}
+
+.action-btn{
+  padding:8px 16px;
+  background:var(--bg4);
+  border:1px solid var(--border);
+  border-radius:6px;
+  color:var(--text2);
+  font-size:.8rem;
+  cursor:pointer;
+  transition:.3s;
+  font-weight:500;
+}
+
+.action-btn:hover{
+  color:var(--cyan);
+  border-color:var(--cyan);
+}
+
+.action-btn.primary{
+  background:var(--cyan);
+  color:#000;
+  border-color:var(--cyan);
+}
+
+.action-btn.primary:hover{
+  background:var(--blue);
+}
+
+/* DECK VIEWER */
+.deck-viewer{
+  flex:1;
+  padding:24px;
+  overflow-y:auto;
+}
+
+.slide-container{
+  background:var(--bg4);
+  border:1px solid var(--border);
+  border-radius:12px;
+  margin-bottom:20px;
+  overflow:hidden;
+  transition:.3s;
+}
+
+.slide-container:hover{
+  border-color:var(--cyan);
+  box-shadow:var(--shadow);
+}
+
+.slide-header{
+  background:var(--bg3);
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.slide-number{
+  background:var(--cyan);
+  color:#000;
+  padding:6px 12px;
+  border-radius:20px;
+  font-size:.8rem;
+  font-weight:700;
+  font-family:'JetBrains Mono',monospace;
+}
+
+.slide-title{
+  font-weight:600;
+  margin-left:16px;
+  flex:1;
+}
+
+.slide-duration{
+  font-size:.8rem;
+  color:var(--text3);
+  font-family:'JetBrains Mono',monospace;
+}
+
+.slide-content{
+  padding:24px;
+  line-height:1.7;
+}
+
+.slide-content h2{
+  color:var(--cyan);
+  margin-bottom:16px;
+  font-size:1.4rem;
+  font-weight:700;
+}
+
+.slide-content h3{
+  color:var(--text);
+  margin-bottom:12px;
+  font-size:1.1rem;
+  font-weight:600;
+}
+
+.slide-content h4{
+  color:var(--orange);
+  margin-bottom:10px;
+  font-size:1rem;
+  font-weight:600;
+}
+
+.slide-content ul{
+  margin-left:20px;
+  margin-bottom:16px;
+}
+
+.slide-content li{
+  margin-bottom:8px;
+  position:relative;
+}
+
+.slide-content li::marker{
+  color:var(--cyan);
+}
+
+.slide-content .highlight{
+  background:rgba(0,174,239,.1);
+  padding:2px 4px;
+  border-radius:3px;
+  color:var(--cyan);
+  font-weight:600;
+}
+
+.slide-content .metric{
+  background:rgba(16,185,129,.1);
+  color:var(--green);
+  padding:2px 6px;
+  border-radius:3px;
+  font-family:'JetBrains Mono',monospace;
+  font-weight:600;
+}
+
+.slide-content .competitive-advantage{
+  background:rgba(227,24,55,.1);
+  border-left:3px solid var(--red);
+  padding:12px 16px;
+  margin:16px 0;
+  border-radius:0 6px 6px 0;
+}
+
+.slide-content table{
+  width:100%;
+  border-collapse:collapse;
+  margin:16px 0;
+  font-size:.9rem;
+}
+
+.slide-content th{
+  background:var(--bg3);
+  padding:12px;
+  text-align:left;
+  border:1px solid var(--border);
+  font-weight:600;
+  color:var(--cyan);
+}
+
+.slide-content td{
+  padding:12px;
+  border:1px solid var(--border);
+}
+
+.slide-content tr:nth-child(even){
+  background:rgba(255,255,255,.02);
+}
+
+/* PROCESSING STATE */
+.processing-overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(8,9,13,.95);
+  backdrop-filter:blur(10px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  z-index:100;
+}
+
+.processing-overlay.active{
+  display:flex;
+}
+
+.processing-spinner{
+  width:48px;
+  height:48px;
+  border:4px solid var(--border);
+  border-top:4px solid var(--cyan);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  margin-bottom:16px;
+}
+
+.processing-text{
+  color:var(--cyan);
+  font-weight:600;
+  margin-bottom:8px;
+}
+
+.processing-subtext{
+  color:var(--text2);
+  font-size:.9rem;
+}
+
+@keyframes spin{
+  from{transform:rotate(0deg)}
+  to{transform:rotate(360deg)}
+}
+
+/* EMPTY STATE */
+.empty-state{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:60px 40px;
+  text-align:center;
+  color:var(--text3);
+}
+
+.empty-icon{
+  font-size:3rem;
+  margin-bottom:16px;
+  opacity:.6;
+}
+
+.empty-title{
+  font-size:1.2rem;
+  font-weight:600;
+  margin-bottom:8px;
+  color:var(--text2);
+}
+
+.empty-description{
+  font-size:.9rem;
+  line-height:1.5;
+  max-width:300px;
+}
+
+/* RESPONSIVE */
+@media(max-width:1200px){
+  .builder-workspace{
+    grid-template-columns:1fr;
+    grid-template-rows:500px 1fr;
+  }
+  
+  .input-panel{
+    max-height:500px;
+  }
+}
+
+@media(max-width:768px){
+  .container{
+    padding:16px;
+  }
+  
+  .enterprise-header{
+    padding:20px;
+  }
+  
+  .enterprise-header h1{
+    font-size:2rem;
+  }
+  
+  .deck-type-grid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- ENTERPRISE HEADER -->
+  <div class="enterprise-header">
+    <h1>🚀 Advanced Pitch Builder</h1>
+    <p class="enterprise-subtitle">Enterprise-grade deck generation for RFPs, Discovery Calls, Executive Presentations, and Technical Deep Dives</p>
+    
+    <div class="enterprise-stats">
+      <div class="stat-pill">
+        <span class="value">50+</span>Slide Templates
+      </div>
+      <div class="stat-pill">
+        <span class="value">6</span>Presentation Types
+      </div>
+      <div class="stat-pill">
+        <span class="value">25+</span>Case Studies
+      </div>
+      <div class="stat-pill">
+        <span class="value">100%</span>Export Ready
+      </div>
+    </div>
+  </div>
+
+  <!-- BUILDER WORKSPACE -->
+  <div class="builder-workspace">
+    <!-- INPUT PANEL -->
+    <div class="builder-panel input-panel">
+      <div class="input-header">
+        <div class="input-title">Deck Configuration</div>
+        <div class="input-description">Configure your enterprise presentation requirements and generate professional, client-ready decks</div>
+      </div>
+
+      <div class="input-tabs">
+        <div class="input-tab active" data-tab="deck-type">Type</div>
+        <div class="input-tab" data-tab="details">Details</div>
+        <div class="input-tab" data-tab="advanced">Advanced</div>
+      </div>
+
+      <div class="tab-content">
+        <!-- DECK TYPE TAB -->
+        <div class="tab-panel active" id="deck-type-tab">
+          <div class="form-group">
+            <label class="form-label required">Presentation Type</label>
+            <div class="deck-type-grid">
+              <div class="deck-type-card" data-type="rfp">
+                <div class="card-title">📋 RFP Response</div>
+                <div class="card-description">Comprehensive response to formal RFPs with technical requirements and detailed proposals</div>
+                <div class="card-slides">16-24 slides</div>
+              </div>
+              <div class="deck-type-card" data-type="rfi">
+                <div class="card-title">📊 RFI Response</div>
+                <div class="card-description">Information-focused responses with capabilities overview and initial qualification</div>
+                <div class="card-slides">12-18 slides</div>
+              </div>
+              <div class="deck-type-card" data-type="discovery">
+                <div class="card-title">🔍 Discovery Call</div>
+                <div class="card-description">Consultative presentations for first meetings and needs assessment calls</div>
+                <div class="card-slides">8-14 slides</div>
+              </div>
+              <div class="deck-type-card" data-type="executive">
+                <div class="card-title">👔 Executive Presentation</div>
+                <div class="card-description">C-suite focused presentations with strategic outcomes and business impact</div>
+                <div class="card-slides">10-16 slides</div>
+              </div>
+              <div class="deck-type-card" data-type="technical">
+                <div class="card-title">⚙️ Technical Deep Dive</div>
+                <div class="card-description">Platform demonstrations and technical capability presentations</div>
+                <div class="card-slides">15-25 slides</div>
+              </div>
+              <div class="deck-type-card" data-type="competitive">
+                <div class="card-title">⚡ Competitive Pitch</div>
+                <div class="card-description">Head-to-head competitive scenarios with displacement strategies</div>
+                <div class="card-slides">12-20 slides</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DETAILS TAB -->
+        <div class="tab-panel" id="details-tab">
+          <div class="form-group">
+            <label class="form-label required">Prospect Company</label>
+            <input type="text" class="form-control" id="prospectName" placeholder="e.g., PNC Bank, SoFi, Bosch Tools">
+            <div class="form-help">Company name for personalized content and case study selection</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">Industry</label>
+            <select class="form-control" id="industry">
+              <option value="">Select Industry</option>
+              <option value="financial-services">Financial Services</option>
+              <option value="fintech">Fintech</option>
+              <option value="healthcare">Healthcare</option>
+              <option value="retail">Retail</option>
+              <option value="cpg">Consumer Packaged Goods</option>
+              <option value="technology">Technology/SaaS</option>
+              <option value="manufacturing">Manufacturing</option>
+              <option value="automotive">Automotive</option>
+              <option value="insurance">Insurance</option>
+              <option value="telecommunications">Telecommunications</option>
+            </select>
+            <div class="form-help">Industry determines relevant case studies, pain points, and positioning</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Company Size</label>
+            <select class="form-control" id="companySize">
+              <option value="">Select Size</option>
+              <option value="enterprise">Enterprise (10,000+ employees)</option>
+              <option value="large">Large (1,000-9,999 employees)</option>
+              <option value="mid-market">Mid-Market (100-999 employees)</option>
+              <option value="small">Small Business (<100 employees)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Key Pain Points</label>
+            <textarea class="form-control large" id="painPoints" placeholder="e.g., declining digital performance, need for measurable ROI, compliance requirements, competitive pressure..."></textarea>
+            <div class="form-help">Specific challenges this prospect faces that Quad can solve</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Budget Range</label>
+            <select class="form-control" id="budgetRange">
+              <option value="">Select Budget Range</option>
+              <option value="under-50k">Under $50K</option>
+              <option value="50k-250k">$50K - $250K</option>
+              <option value="250k-500k">$250K - $500K</option>
+              <option value="500k-1m">$500K - $1M</option>
+              <option value="1m-plus">$1M+</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ADVANCED TAB -->
+        <div class="tab-panel" id="advanced-tab">
+          <div class="form-group">
+            <label class="form-label">Audience Level</label>
+            <select class="form-control" id="audienceLevel">
+              <option value="c-suite">C-Suite/Executive Team</option>
+              <option value="vp">VP/Director Level</option>
+              <option value="manager">Manager/Individual Contributor</option>
+              <option value="technical">Technical/IT Team</option>
+              <option value="procurement">Procurement/Legal</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Meeting Duration</label>
+            <select class="form-control" id="meetingDuration">
+              <option value="30">30 minutes</option>
+              <option value="45">45 minutes</option>
+              <option value="60">60 minutes</option>
+              <option value="90">90 minutes</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Competitive Context</label>
+            <textarea class="form-control large" id="competitiveContext" placeholder="e.g., Currently using RRD for production, evaluating Lob for API integration, considering in-house solutions..."></textarea>
+            <div class="form-help">Known competitors or current vendors in the evaluation</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Special Requirements</label>
+            <textarea class="form-control large" id="specialRequirements" placeholder="e.g., HIPAA compliance required, international mail capabilities, specific integrations needed..."></textarea>
+            <div class="form-help">Unique needs or constraints for this opportunity</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Success Metrics</label>
+            <textarea class="form-control large" id="successMetrics" placeholder="e.g., 20% cost reduction, 2x faster campaign deployment, measurable attribution..."></textarea>
+            <div class="form-help">How the prospect measures success and ROI</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="generate-section">
+        <button class="generate-btn" onclick="generateDeck()">
+          <span id="generateText">🚀 Generate Enterprise Presentation</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- OUTPUT PANEL -->
+    <div class="builder-panel output-panel">
+      <div class="output-header">
+        <div class="output-title">Generated Presentation</div>
+        <div class="output-actions">
+          <button class="action-btn" onclick="previewDeck()" id="previewBtn" disabled>👁️ Preview</button>
+          <button class="action-btn" onclick="saveDraft()" id="saveBtn" disabled>💾 Save</button>
+          <button class="action-btn primary" onclick="exportDeck()" id="exportBtn" disabled>📤 Export Deck</button>
+        </div>
+      </div>
+
+      <div class="deck-viewer" id="deckViewer">
+        <div class="empty-state">
+          <div class="empty-icon">📊</div>
+          <div class="empty-title">Ready to Create Your Presentation</div>
+          <div class="empty-description">Configure your presentation requirements and click "Generate Enterprise Presentation" to create a professional, client-ready deck.</div>
+        </div>
+      </div>
+
+      <!-- Processing Overlay -->
+      <div class="processing-overlay" id="processingOverlay">
+        <div class="processing-spinner"></div>
+        <div class="processing-text">Generating Enterprise Presentation</div>
+        <div class="processing-subtext">Creating personalized slides with industry-specific content...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// GLOBAL VARIABLES
+let currentDeckType = '';
+let generatedSlides = [];
+let processingTimeout;
+
+// QUAD ENTERPRISE DATA
+const QUAD_CAPABILITIES = {
+  data: {
+    title: "Data Intelligence & Targeting",
+    description: "3B+ household data points for precision targeting",
+    metrics: ["3B+ data points", "99.9% deliverability", "50+ targeting attributes"],
+    competitive: "More comprehensive than Acxiom, more actionable than Epsilon"
+  },
+  creative: {
+    title: "Creative & Content Services", 
+    description: "Award-winning creative that drives measurable response",
+    metrics: ["300+ designers", "48hr turnaround", "A/B testing built-in"],
+    competitive: "Unlike agencies, we optimize for mail response, not awards"
+  },
+  production: {
+    title: "Production & Manufacturing",
+    description: "8B+ pieces annually across all formats and substrates", 
+    metrics: ["8B pieces/year", "99.2% quality score", "1-3 day turnaround"],
+    competitive: "Scale that RRD can't match, quality that local printers can't deliver"
+  },
+  media: {
+    title: "Media & Channel Integration",
+    description: "Unified campaigns across mail, digital, and in-store",
+    metrics: ["Cross-channel attribution", "Unified dashboards", "Real-time optimization"],
+    competitive: "MediaMath for mail - what Facebook Ads Manager is to digital"
+  },
+  technology: {
+    title: "Technology & Automation",
+    description: "API-first platform connecting CRM to mailbox",
+    metrics: ["99.9% uptime", "Sub-second API response", "Real-time triggers"],
+    competitive: "Lob's ease with enterprise scale and reliability"
+  }
+};
+
+const INDUSTRY_PAIN_POINTS = {
+  "financial-services": [
+    "Regulatory compliance complexity (CAN-SPAM, TCPA, state regulations)",
+    "Customer acquisition costs rising 15-20% annually", 
+    "Digital ad performance declining due to iOS changes and privacy",
+    "Need for measurable, attributable marketing ROI",
+    "Cross-selling existing customers more cost-effective than acquisition"
+  ],
+  "fintech": [
+    "Customer acquisition costs in digital channels increasing dramatically",
+    "Need to build trust and credibility in regulated space",
+    "Compliance requirements limiting digital advertising options",
+    "Difficulty reaching older demographics through digital-only strategies",
+    "Pressure to show clear ROI on marketing spend"
+  ],
+  "healthcare": [
+    "HIPAA compliance requirements limiting marketing options",
+    "Aging population prefers tangible communications",
+    "Need to drive patient engagement and medication adherence", 
+    "Proving marketing ROI in healthcare outcomes",
+    "Reaching patients across multiple touchpoints effectively"
+  ],
+  "retail": [
+    "E-commerce growth plateauing, need for omnichannel strategies",
+    "Customer lifetime value declining due to increased competition",
+    "Difficulty driving foot traffic to physical locations",
+    "Need for personalized communications at scale",
+    "Inventory management and seasonal campaign coordination"
+  ],
+  "cpg": [
+    "Retailer relationship management and co-op advertising complexity", 
+    "Consumer brand awareness declining in crowded marketplace",
+    "Need to drive both online and in-store purchase behavior",
+    "Supply chain disruptions affecting product availability messaging",
+    "Proving incremental lift over baseline sales performance"
+  ]
+};
+
+const CASE_STUDIES = {
+  "financial-services": [
+    {
+      client: "Regional Credit Union",
+      challenge: "Member acquisition costs rising, digital channels plateauing",
+      solution: "Triggered welcome series + life event targeting via At-Home Connect",
+      results: "43% increase in new member acquisition, $89 lower CAC vs digital",
+      metric: "43% member growth"
+    },
+    {
+      client: "PEMCO Insurance", 
+      challenge: "Policy renewal rates declining, customer churn increasing",
+      solution: "Personalized renewal campaigns with MergedMail postal optimization",
+      results: "12% improvement in renewal rates, 23% reduction in mailing costs",
+      metric: "12% renewal lift"
+    }
+  ],
+  "fintech": [
+    {
+      client: "Leading BNPL Provider",
+      challenge: "High customer acquisition costs, need to reach underbanked segments", 
+      solution: "Pre-approved offer campaigns with household-level data targeting",
+      results: "31% improvement in approval rates, 18% lower CAC than digital",
+      metric: "31% approval rate lift"
+    }
+  ],
+  "healthcare": [
+    {
+      client: "InnovAge (PACE)",
+      challenge: "Medicare enrollment campaigns needed to drive qualified leads",
+      solution: "HIPAA-compliant enrollment campaigns with demographic targeting", 
+      results: "64% increase in qualified enrollments, 28% improvement in cost per acquisition",
+      metric: "64% enrollment increase"
+    }
+  ],
+  "retail": [
+    {
+      client: "At Home (Home Decor)",
+      challenge: "Grand opening campaigns for new store locations",
+      solution: "Geo-targeted grand opening campaigns with in-store signage integration",
+      results: "32% above forecast in opening weekend traffic, $2.1M incremental revenue",
+      metric: "32% traffic increase"
+    },
+    {
+      client: "Plow & Hearth",
+      challenge: "Seasonal campaign coordination across channels",
+      solution: "Integrated catalog + digital retargeting with Connex attribution",
+      results: "26% improvement in seasonal revenue, 15% better ROAS than digital-only",
+      metric: "26% revenue lift"
+    }
+  ],
+  "cpg": [
+    {
+      client: "Mostly Made (Premium Foods)",
+      challenge: "Launch new product line in competitive specialty food market",
+      solution: "Sample campaigns + retailer co-op integration with beautiful creative",
+      results: "136% above forecast sales in first 90 days, 89% trial-to-purchase rate",
+      metric: "136% sales growth"
+    }
+  ]
+};
+
+const COMPETITIVE_POSITIONING = {
+  "vs-rrd": {
+    title: "vs. RRD (R.R. Donnelley)",
+    positioning: "RRD is a production powerhouse, but Quad is a marketing operating system",
+    advantages: [
+      "RRD prints well, but lacks the data intelligence and targeting precision Quad provides",
+      "No integrated technology platform - they're still primarily a traditional printer",
+      "Limited creative services - they can't provide the strategic marketing support you need",
+      "Quad combines RRD's production scale with modern MarTech platform capabilities"
+    ]
+  },
+  "vs-lob": {
+    title: "vs. Lob", 
+    positioning: "Lob is a developer tool, Quad is an enterprise marketing platform",
+    advantages: [
+      "Lob is great for triggered postcards, but lacks the scale for enterprise campaigns",
+      "No physical production capabilities - they outsource everything",
+      "Limited format options - mainly postcards and simple letters",  
+      "Quad provides Lob's API ease with true enterprise scale and format variety"
+    ]
+  },
+  "vs-broadridge": {
+    title: "vs. Broadridge",
+    positioning: "Broadridge excels in FinServ compliance, but lacks cross-industry expertise", 
+    advantages: [
+      "Broadridge is FinServ-focused - they can't serve your broader marketing needs",
+      "Limited creative capabilities and format options",
+      "No integrated data platform or cross-channel measurement",
+      "Quad provides the same compliance rigor with much broader marketing capabilities"
+    ]
+  },
+  "vs-inhouse": {
+    title: "vs. In-House Solutions",
+    positioning: "Building in-house is expensive and distracts from core business",
+    advantages: [
+      "Marketing teams should focus on strategy, not vendor management",
+      "In-house solutions lack the scale economies Quad provides", 
+      "No access to industry benchmarks and best practices",
+      "Quad provides enterprise capabilities without enterprise overhead"
+    ]
+  }
+};
+
+// TAB SWITCHING
+document.querySelectorAll('.input-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    // Remove active from all tabs and panels
+    document.querySelectorAll('.input-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    
+    // Add active to clicked tab and corresponding panel
+    tab.classList.add('active');
+    const targetPanel = document.getElementById(tab.dataset.tab + '-tab');
+    if (targetPanel) {
+      targetPanel.classList.add('active');
+    }
+  });
+});
+
+// DECK TYPE SELECTION
+document.querySelectorAll('.deck-type-card').forEach(card => {
+  card.addEventListener('click', () => {
+    // Remove selected from all cards
+    document.querySelectorAll('.deck-type-card').forEach(c => c.classList.remove('selected'));
+    
+    // Add selected to clicked card  
+    card.classList.add('selected');
+    currentDeckType = card.dataset.type;
+  });
+});
+
+// DECK GENERATION ENGINE
+async function generateDeck() {
+  // Validation
+  if (!currentDeckType) {
+    alert('Please select a presentation type first.');
+    return;
+  }
+  
+  const prospectName = document.getElementById('prospectName').value.trim();
+  const industry = document.getElementById('industry').value;
+  
+  if (!prospectName) {
+    alert('Please enter the prospect company name.');
+    return;
+  }
+  
+  if (!industry) {
+    alert('Please select an industry.');
+    return;
+  }
+
+  // Show processing state
+  showProcessing();
+  
+  // Collect all form data
+  const deckData = {
+    type: currentDeckType,
+    prospect: prospectName,
+    industry: industry,
+    companySize: document.getElementById('companySize').value,
+    painPoints: document.getElementById('painPoints').value,
+    budgetRange: document.getElementById('budgetRange').value,
+    audienceLevel: document.getElementById('audienceLevel').value,
+    meetingDuration: document.getElementById('meetingDuration').value,
+    competitiveContext: document.getElementById('competitiveContext').value,
+    specialRequirements: document.getElementById('specialRequirements').value,
+    successMetrics: document.getElementById('successMetrics').value
+  };
+
+  // Generate slides based on type
+  try {
+    await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate processing
+    generatedSlides = generateSlidesByType(deckData);
+    renderDeck();
+    enableActions();
+  } catch (error) {
+    console.error('Error generating deck:', error);
+    alert('Error generating presentation. Please try again.');
+  } finally {
+    hideProcessing();
+  }
+}
+
+function generateSlidesByType(data) {
+  switch (data.type) {
+    case 'rfp':
+      return generateRFPDeck(data);
+    case 'rfi': 
+      return generateRFIDeck(data);
+    case 'discovery':
+      return generateDiscoveryDeck(data);
+    case 'executive':
+      return generateExecutiveDeck(data);
+    case 'technical':
+      return generateTechnicalDeck(data);
+    case 'competitive':
+      return generateCompetitiveDeck(data);
+    default:
+      return generateDiscoveryDeck(data);
+  }
+}
+
+function generateRFPDeck(data) {
+  const industryPains = INDUSTRY_PAIN_POINTS[data.industry] || [];
+  const industryCases = CASE_STUDIES[data.industry] || [];
+  
+  return [
+    {
+      number: 1,
+      title: "Executive Summary",
+      duration: "2 min",
+      content: `
+        <h2>Executive Summary</h2>
+        <h3>Quad's Response to ${data.prospect} RFP</h3>
+        
+        <div class="competitive-advantage">
+          <h4>Why Quad is Your Strategic Partner</h4>
+          <p>Quad uniquely combines all five pillars of marketing experience under one roof: <span class="highlight">Data Intelligence</span>, <span class="highlight">Creative Services</span>, <span class="highlight">Production Excellence</span>, <span class="highlight">Media Integration</span>, and <span class="highlight">Technology Platform</span>.</p>
+        </div>
+        
+        <h4>Key Differentiators for ${data.prospect}:</h4>
+        <ul>
+          <li><strong>Scale:</strong> <span class="metric">8B+ pieces annually</span> with enterprise-grade reliability</li>
+          <li><strong>Intelligence:</strong> <span class="metric">3B+ household data points</span> for precision targeting</li>
+          <li><strong>Integration:</strong> Unified campaigns across mail, digital, and in-store channels</li>
+          <li><strong>Innovation:</strong> API-first platform with real-time triggers and automation</li>
+        </ul>
+        
+        <h4>Expected Outcomes:</h4>
+        <ul>
+          <li>Consolidate multiple vendors into single strategic partnership</li>
+          <li>Improve campaign performance through integrated data and creative</li>
+          <li>Reduce operational complexity while increasing marketing sophistication</li>
+          <li>Access industry-leading capabilities typically reserved for Fortune 100</li>
+        </ul>
+      `
+    },
+    {
+      number: 2,
+      title: "Understanding Your Requirements",
+      duration: "3 min", 
+      content: `
+        <h2>Understanding ${data.prospect}'s Requirements</h2>
+        
+        <h3>Key Requirements Identified:</h3>
+        <ul>
+          ${data.painPoints ? data.painPoints.split('\n').map(point => `<li>${point.trim()}</li>`).join('') : ''}
+          ${industryPains.slice(0, 3).map(pain => `<li>${pain}</li>`).join('')}
+        </ul>
+        
+        <h3>Success Metrics Alignment:</h3>
+        ${data.successMetrics ? `
+        <ul>
+          ${data.successMetrics.split('\n').map(metric => `<li><span class="highlight">${metric.trim()}</span></li>`).join('')}
+        </ul>
+        ` : `
+        <ul>
+          <li><span class="metric">Measurable ROI</span> improvement within 90 days</li>
+          <li><span class="metric">Operational efficiency</span> through vendor consolidation</li>
+          <li><span class="metric">Campaign performance</span> lift through better targeting and creative</li>
+          <li><span class="metric">Compliance and quality</span> with enterprise-grade reliability</li>
+        </ul>
+        `}
+        
+        <h3>Competitive Context:</h3>
+        ${data.competitiveContext ? `
+        <p><strong>Current Situation:</strong> ${data.competitiveContext}</p>
+        ` : ''}
+        
+        <div class="competitive-advantage">
+          <h4>Why This RFP Matters</h4>
+          <p>This isn't just a vendor selection - it's a strategic decision that will impact your marketing effectiveness for years to come. Quad brings unique capabilities that turn direct mail from a tactical channel into a strategic growth driver.</p>
+        </div>
+      `
+    },
+    {
+      number: 3,
+      title: "Company Overview & Credentials",
+      duration: "4 min",
+      content: `
+        <h2>Quad: Your Marketing Experience Partner</h2>
+        
+        <h3>Enterprise Scale & Reliability:</h3>
+        <ul>
+          <li><span class="metric">8B+ mail pieces</span> produced annually</li>
+          <li><span class="metric">50+ years</span> of direct marketing innovation</li>
+          <li><span class="metric">$4B+ annual revenue</span> with Fortune 500 stability</li>
+          <li><span class="metric">14,000+ employees</span> across North America</li>
+          <li><span class="metric">40+ production facilities</span> for redundancy and speed</li>
+        </ul>
+        
+        <h3>Five Pillars Under One Roof:</h3>
+        
+        <table>
+          <tr>
+            <th>Capability</th>
+            <th>What We Deliver</th>
+            <th>Competitive Advantage</th>
+          </tr>
+          <tr>
+            <td><strong>Data Intelligence</strong></td>
+            <td>3B+ household data points, precision targeting</td>
+            <td>More comprehensive than Acxiom, more actionable than Epsilon</td>
+          </tr>
+          <tr>
+            <td><strong>Creative Services</strong></td>
+            <td>300+ designers, award-winning creative optimized for response</td>
+            <td>Unlike agencies, we optimize for mail response, not awards</td>
+          </tr>
+          <tr>
+            <td><strong>Production Excellence</strong></td>
+            <td>99.2% quality score, 1-3 day turnaround at scale</td>
+            <td>Scale RRD can't match, quality local printers can't deliver</td>
+          </tr>
+          <tr>
+            <td><strong>Media Integration</strong></td>
+            <td>Cross-channel attribution, unified dashboards</td>
+            <td>MediaMath for mail - Facebook Ads Manager for direct marketing</td>
+          </tr>
+          <tr>
+            <td><strong>Technology Platform</strong></td>
+            <td>API-first, real-time triggers, enterprise integrations</td>
+            <td>Lob's ease with true enterprise scale and reliability</td>
+          </tr>
+        </table>
+        
+        <div class="competitive-advantage">
+          <h4>The Quad Difference</h4>
+          <p>While competitors excel in one or two areas, Quad is the only partner that combines all five pillars of marketing experience. This integration isn't just convenient - it's transformational for campaign performance.</p>
+        </div>
+      `
+    },
+    {
+      number: 4,
+      title: "Solution Architecture",
+      duration: "5 min",
+      content: `
+        <h2>Proposed Solution for ${data.prospect}</h2>
+        
+        <h3>Recommended Quad Offerings:</h3>
+        
+        <h4>🎯 At-Home Connect (Triggered Direct Mail)</h4>
+        <ul>
+          <li>Real-time triggers from your CRM, website, or mobile app</li>
+          <li>Automated lifecycle campaigns (welcome, onboarding, winback)</li>
+          <li>Event-based messaging (account changes, payment reminders)</li>
+          <li><span class="metric">Sub-second API response</span> for immediate campaign deployment</li>
+        </ul>
+        
+        <h4>📊 MergedMail (Postal Optimization)</h4>
+        <ul>
+          <li>Co-mail programs reducing postage costs by <span class="metric">15-25%</span></li>
+          <li>Postal logistics optimization and presorting</li>
+          <li>USPS partnership for delivery confirmation and tracking</li>
+          <li>Carbon-neutral delivery options for sustainability goals</li>
+        </ul>
+        
+        <h4>🔬 AMI (Accelerated Marketing Insights)</h4>
+        <ul>
+          <li>A/B testing platform enabling <span class="metric">6x faster</span> optimization cycles</li>
+          <li>Real-time campaign performance monitoring</li>
+          <li>Statistical significance testing built into every campaign</li>
+          <li>Machine learning-driven creative and audience optimization</li>
+        </ul>
+        
+        <h4>📈 Connex (Attribution & Analytics)</h4>
+        <ul>
+          <li>Cross-channel attribution connecting mail to digital outcomes</li>
+          <li>Customer journey mapping across all touchpoints</li>
+          <li>Unified reporting dashboard with real-time insights</li>
+          <li>Integration with Google Analytics, Adobe, Salesforce, and other platforms</li>
+        </ul>
+        
+        <h3>Implementation Timeline:</h3>
+        <table>
+          <tr>
+            <th>Phase</th>
+            <th>Duration</th>
+            <th>Key Deliverables</th>
+          </tr>
+          <tr>
+            <td>Discovery & Setup</td>
+            <td>2-3 weeks</td>
+            <td>Data integration, platform configuration, creative briefing</td>
+          </tr>
+          <tr>
+            <td>Pilot Campaign</td>
+            <td>2-4 weeks</td>
+            <td>Limited-scale test campaign with full measurement</td>
+          </tr>
+          <tr>
+            <td>Full Deployment</td>
+            <td>4-6 weeks</td>
+            <td>Scale to full program with automated optimization</td>
+          </tr>
+        </table>
+      `
+    },
+    {
+      number: 5,
+      title: "Relevant Case Studies",
+      duration: "4 min",
+      content: `
+        <h2>Proven Results in ${data.industry.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</h2>
+        
+        ${industryCases.map(study => `
+        <div class="competitive-advantage">
+          <h4>${study.client}</h4>
+          <p><strong>Challenge:</strong> ${study.challenge}</p>
+          <p><strong>Solution:</strong> ${study.solution}</p>
+          <p><strong>Results:</strong> ${study.results}</p>
+          <p style="text-align: right; font-size: 1.2rem; font-weight: bold; color: var(--green);">${study.metric}</p>
+        </div>
+        `).join('')}
+        
+        <h3>Cross-Industry Success Metrics:</h3>
+        <ul>
+          <li><span class="metric">Average 23% improvement</span> in campaign response rates</li>
+          <li><span class="metric">Average 31% reduction</span> in customer acquisition costs</li>
+          <li><span class="metric">Average 18% increase</span> in customer lifetime value</li>
+          <li><span class="metric">Average 6x faster</span> campaign optimization cycles</li>
+        </ul>
+        
+        <div class="competitive-advantage">
+          <h4>Why These Results Transfer to ${data.prospect}</h4>
+          <p>These aren't isolated successes - they represent systematic advantages that come from Quad's integrated platform. The same data intelligence, creative optimization, and technology that drove these results will work for ${data.prospect}.</p>
+        </div>
+      `
+    },
+    {
+      number: 6,
+      title: "Technical Requirements",
+      duration: "4 min", 
+      content: `
+        <h2>Technical Capabilities & Integration</h2>
+        
+        <h3>Platform Integration:</h3>
+        <ul>
+          <li><strong>CRM Integration:</strong> Native connectors for Salesforce, HubSpot, Microsoft Dynamics</li>
+          <li><strong>Marketing Automation:</strong> Direct integration with Marketo, Pardot, Eloqua</li>
+          <li><strong>E-commerce Platforms:</strong> Shopify, Magento, WooCommerce webhooks</li>
+          <li><strong>Analytics Platforms:</strong> Google Analytics 4, Adobe Analytics, custom dashboards</li>
+        </ul>
+        
+        <h3>API Capabilities:</h3>
+        <ul>
+          <li><span class="metric">REST API</span> with comprehensive documentation and SDKs</li>
+          <li><span class="metric">99.9% uptime SLA</span> with enterprise support</li>
+          <li><span class="metric">Sub-second response times</span> for real-time triggers</li>
+          <li><span class="metric">Webhook support</span> for bidirectional data flow</li>
+        </ul>
+        
+        <h3>Data Security & Compliance:</h3>
+        <ul>
+          <li><strong>SOC 2 Type II</strong> certified for data security</li>
+          <li><strong>HIPAA compliance</strong> for healthcare organizations</li>
+          <li><strong>PCI DSS</strong> compliance for payment data handling</li>
+          <li><strong>GDPR & CCPA</strong> compliant data processing</li>
+        </ul>
+        
+        ${data.specialRequirements ? `
+        <h3>Addressing Your Special Requirements:</h3>
+        <ul>
+          ${data.specialRequirements.split('\n').map(req => `<li>${req.trim()}</li>`).join('')}
+        </ul>
+        ` : ''}
+        
+        <div class="competitive-advantage">
+          <h4>Enterprise-Grade Infrastructure</h4>
+          <p>Quad's technology infrastructure is built for enterprise scale and reliability. We process millions of API calls daily and maintain 99.9% uptime because your campaigns can't wait.</p>
+        </div>
+      `
+    },
+    {
+      number: 7,
+      title: "Pricing & Investment",
+      duration: "3 min",
+      content: `
+        <h2>Investment Framework</h2>
+        
+        <h3>Flexible Pricing Model:</h3>
+        <ul>
+          <li><strong>Platform Access:</strong> Monthly SaaS fee for technology and data access</li>
+          <li><strong>Production Costs:</strong> Variable costs based on volume and format</li>
+          <li><strong>Creative Services:</strong> Project-based or retainer options available</li>
+          <li><strong>Managed Services:</strong> Optional full-service campaign management</li>
+        </ul>
+        
+        ${data.budgetRange ? `
+        <h3>Budget Alignment (${data.budgetRange.replace('-', ' - ').toUpperCase()}):</h3>
+        <p>Based on your indicated budget range, we recommend a balanced approach focusing on:</p>
+        <ul>
+          <li>Core platform capabilities (At-Home Connect + MergedMail)</li>
+          <li>Strategic creative services for key campaigns</li>
+          <li>Comprehensive measurement and optimization (AMI + Connex)</li>
+          <li>Phased rollout to demonstrate ROI before full investment</li>
+        </ul>
+        ` : ''}
+        
+        <h3>ROI Expectations:</h3>
+        <table>
+          <tr>
+            <th>Investment Area</th>
+            <th>Typical ROI Range</th>
+            <th>Payback Period</th>
+          </tr>
+          <tr>
+            <td>Platform Implementation</td>
+            <td>300-500%</td>
+            <td>6-9 months</td>
+          </tr>
+          <tr>
+            <td>Creative Optimization</td>
+            <td>200-400%</td>
+            <td>3-6 months</td>
+          </tr>
+          <tr>
+            <td>Postal Optimization</td>
+            <td>150-250%</td>
+            <td>Immediate</td>
+          </tr>
+        </table>
+        
+        <div class="competitive-advantage">
+          <h4>Investment vs. Cost Mindset</h4>
+          <p>While Quad may not be the lowest-cost option, we deliver the highest value. Our integrated platform approach typically reduces total marketing costs while dramatically improving results.</p>
+        </div>
+      `
+    },
+    {
+      number: 8,
+      title: "Implementation Plan",
+      duration: "4 min",
+      content: `
+        <h2>90-Day Implementation Roadmap</h2>
+        
+        <h3>Phase 1: Foundation (Days 1-30)</h3>
+        <ul>
+          <li><strong>Week 1-2:</strong> Technical discovery and data integration planning</li>
+          <li><strong>Week 2-3:</strong> Creative briefing and brand guidelines review</li>
+          <li><strong>Week 3-4:</strong> Platform configuration and testing</li>
+          <li><strong>Deliverables:</strong> Integrated platform, approved creative concepts</li>
+        </ul>
+        
+        <h3>Phase 2: Pilot Campaign (Days 31-60)</h3>
+        <ul>
+          <li><strong>Week 5-6:</strong> Limited-scale pilot campaign launch</li>
+          <li><strong>Week 7-8:</strong> Performance monitoring and optimization</li>
+          <li><strong>Deliverables:</strong> Pilot results analysis, optimization recommendations</li>
+        </ul>
+        
+        <h3>Phase 3: Scale & Optimize (Days 61-90)</h3>
+        <ul>
+          <li><strong>Week 9-10:</strong> Full-scale campaign deployment</li>
+          <li><strong>Week 11-12:</strong> Advanced feature activation and training</li>
+          <li><strong>Deliverables:</strong> Full campaign portfolio, team training completion</li>
+        </ul>
+        
+        <h3>Dedicated Support Team:</h3>
+        <ul>
+          <li><strong>Client Success Manager:</strong> Strategic oversight and relationship management</li>
+          <li><strong>Technical Integration Specialist:</strong> Platform setup and ongoing support</li>
+          <li><strong>Creative Director:</strong> Brand guidelines and campaign creative leadership</li>
+          <li><strong>Analytics Specialist:</strong> Performance measurement and optimization</li>
+        </ul>
+        
+        <h3>Success Milestones:</h3>
+        <table>
+          <tr>
+            <th>Milestone</th>
+            <th>Timeline</th>
+            <th>Success Criteria</th>
+          </tr>
+          <tr>
+            <td>Platform Integration</td>
+            <td>Day 30</td>
+            <td>API connectivity, data flowing, first campaigns deployed</td>
+          </tr>
+          <tr>
+            <td>Pilot Results</td>
+            <td>Day 60</td>
+            <td>Measurable improvement vs. baseline performance</td>
+          </tr>
+          <tr>
+            <td>Full Deployment</td>
+            <td>Day 90</td>
+            <td>Complete campaign portfolio migrated and optimized</td>
+          </tr>
+        </table>
+      `
+    },
+    {
+      number: 9,
+      title: "Risk Mitigation",
+      duration: "3 min",
+      content: `
+        <h2>Risk Mitigation & Success Assurance</h2>
+        
+        <h3>Common Implementation Risks:</h3>
+        
+        <h4>🔧 Technical Integration Risk</h4>
+        <ul>
+          <li><strong>Risk:</strong> Complex system integrations causing delays</li>
+          <li><strong>Mitigation:</strong> Pre-built connectors, dedicated technical resources, phased rollout</li>
+          <li><strong>Backup Plan:</strong> Manual processes available during integration period</li>
+        </ul>
+        
+        <h4>📊 Performance Risk</h4>
+        <ul>
+          <li><strong>Risk:</strong> New campaigns underperform vs. current baselines</li>
+          <li><strong>Mitigation:</strong> Conservative pilot approach, A/B testing against control groups</li>
+          <li><strong>Backup Plan:</strong> Immediate optimization protocols, revert capabilities</li>
+        </ul>
+        
+        <h4>👥 Change Management Risk</h4>
+        <ul>
+          <li><strong>Risk:</strong> Team resistance to new processes and platforms</li>
+          <li><strong>Mitigation:</strong> Comprehensive training, dedicated support, gradual rollout</li>
+          <li><strong>Backup Plan:</strong> Extended training period, one-on-one coaching available</li>
+        </ul>
+        
+        <h3>Quad's Success Guarantees:</h3>
+        <ul>
+          <li><strong>Platform Uptime:</strong> 99.9% SLA with service credits for downtime</li>
+          <li><strong>Performance Guarantee:</strong> Measurable improvement within 90 days or extended optimization</li>
+          <li><strong>Support Response:</strong> <4-hour response for critical issues</li>
+          <li><strong>Training Completion:</strong> Certified team competency before full deployment</li>
+        </ul>
+        
+        <div class="competitive-advantage">
+          <h4>Why Quad Minimizes Risk</h4>
+          <p>With 50+ years of experience and thousands of successful implementations, Quad has encountered and solved every possible implementation challenge. Our proven methodologies minimize risk while accelerating time-to-value.</p>
+        </div>
+      `
+    },
+    {
+      number: 10,
+      title: "Next Steps",
+      duration: "2 min",
+      content: `
+        <h2>Proposed Next Steps</h2>
+        
+        <h3>Immediate Actions (This Week):</h3>
+        <ol>
+          <li><strong>Technical Discovery Call</strong> - Our integration team reviews your current tech stack</li>
+          <li><strong>Creative Brief Session</strong> - Understand brand guidelines and campaign objectives</li>
+          <li><strong>Data Assessment</strong> - Evaluate current data sources and targeting capabilities</li>
+        </ol>
+        
+        <h3>Decision Timeline:</h3>
+        <table>
+          <tr>
+            <th>Milestone</th>
+            <th>Timeframe</th>
+            <th>Deliverable</th>
+          </tr>
+          <tr>
+            <td>Technical Review</td>
+            <td>Week 1</td>
+            <td>Integration assessment and timeline</td>
+          </tr>
+          <tr>
+            <td>Pilot Proposal</td>
+            <td>Week 2</td>
+            <td>Detailed pilot campaign plan and budget</td>
+          </tr>
+          <tr>
+            <td>Contract Execution</td>
+            <td>Week 3</td>
+            <td>Signed agreement and implementation kickoff</td>
+          </tr>
+        </table>
+        
+        <h3>Questions for ${data.prospect}:</h3>
+        <ul>
+          <li>What's your ideal timeline for pilot campaign launch?</li>
+          <li>Which stakeholders should be included in technical discovery?</li>
+          <li>Are there specific campaigns you'd like to prioritize for the pilot?</li>
+          <li>What approval processes should we plan for in our timeline?</li>
+        </ul>
+        
+        <div class="competitive-advantage">
+          <h4>Ready to Transform Your Direct Marketing?</h4>
+          <p>Quad is ready to be your strategic marketing partner. Let's schedule our next conversation and begin this transformation together.</p>
+          
+          <p style="text-align: center; margin-top: 20px; font-size: 1.1rem;">
+            <strong>Contact:</strong> [Your Name] | [Your Email] | [Your Phone]<br>
+            <strong>Quad Marketing Experience Company</strong><br>
+            <em>"We engineer customer experiences, not just campaigns."</em>
+          </p>
+        </div>
+      `
+    }
+  ];
+}
+
+function generateRFIDeck(data) {
+  return [
+    {
+      number: 1,
+      title: "Company Overview",
+      duration: "3 min",
+      content: `
+        <h2>Quad: Marketing Experience Company</h2>
+        <h3>Who We Are</h3>
+        <ul>
+          <li><span class="metric">50+ years</span> of direct marketing innovation</li>
+          <li><span class="metric">8B+ mail pieces</span> produced annually</li>
+          <li><span class="metric">$4B+ revenue</span> Fortune 500 stability</li>
+          <li><span class="metric">14,000+ employees</span> across North America</li>
+        </ul>
+        
+        <h3>What Makes Us Different</h3>
+        <div class="competitive-advantage">
+          <p>Quad is the only company that combines all five pillars of marketing experience under one roof: Data Intelligence, Creative Services, Production Excellence, Media Integration, and Technology Platform.</p>
+        </div>
+        
+        <h3>Industries We Serve</h3>
+        <ul>
+          <li>Financial Services & Fintech</li>
+          <li>Healthcare & Pharmaceuticals</li>
+          <li>Retail & E-commerce</li>
+          <li>Consumer Packaged Goods</li>
+          <li>Technology & SaaS</li>
+          <li>Automotive & Manufacturing</li>
+        </ul>
+      `
+    },
+    // Additional RFI slides would follow similar pattern but shorter/less detailed than RFP
+  ];
+}
+
+function generateDiscoveryDeck(data) {
+  const industryPains = INDUSTRY_PAIN_POINTS[data.industry] || [];
+  const industryCases = CASE_STUDIES[data.industry] || [];
+  
+  return [
+    {
+      number: 1,
+      title: "Welcome & Agenda",
+      duration: "1 min",
+      content: `
+        <h2>Welcome ${data.prospect}</h2>
+        <h3>Discovery Call Agenda</h3>
+        <ul>
+          <li><strong>Introductions</strong> - Quick background on Quad (5 min)</li>
+          <li><strong>Your Challenges</strong> - Understanding your current situation (15 min)</li>
+          <li><strong>Quad Overview</strong> - How we solve similar challenges (15 min)</li>
+          <li><strong>Relevant Examples</strong> - Success stories in your industry (10 min)</li>
+          <li><strong>Next Steps</strong> - Mutual interest and follow-up (10 min)</li>
+        </ul>
+        
+        <div style="text-align: center; margin-top: 20px;">
+          <p style="color: var(--text2);">Total time: <span class="highlight">${data.meetingDuration || '60'} minutes</span></p>
+        </div>
+      `
+    },
+    {
+      number: 2, 
+      title: "Quad at a Glance",
+      duration: "4 min",
+      content: `
+        <h2>Quad: Marketing Experience Company</h2>
+        
+        <h3>We're Different:</h3>
+        <ul>
+          <li><span class="metric">Only company</span> combining all 5 pillars of marketing under one roof</li>
+          <li><span class="metric">Not just mail</span> - we're a complete marketing technology platform</li>
+          <li><span class="metric">Enterprise scale</span> with mid-market accessibility and service</li>
+        </ul>
+        
+        <table>
+          <tr>
+            <th>Capability</th>
+            <th>What This Means for You</th>
+          </tr>
+          <tr>
+            <td><strong>Data Intelligence</strong></td>
+            <td>Better targeting = higher response rates, lower waste</td>
+          </tr>
+          <tr>
+            <td><strong>Creative Services</strong></td>
+            <td>Professional creative optimized for response, not awards</td>
+          </tr>
+          <tr>
+            <td><strong>Production</strong></td>
+            <td>Quality, speed, and scale you can't get elsewhere</td>
+          </tr>
+          <tr>
+            <td><strong>Technology</strong></td>
+            <td>Modern platform that integrates with your existing tech</td>
+          </tr>
+          <tr>
+            <td><strong>Media Integration</strong></td>
+            <td>Mail + digital working together, not in isolation</td>
+          </tr>
+        </table>
+      `
+    },
+    {
+      number: 3,
+      title: `Common ${data.industry.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} Challenges`,
+      duration: "5 min", 
+      content: `
+        <h2>What We're Hearing in ${data.industry.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</h2>
+        
+        <h3>Common Challenges:</h3>
+        <ul>
+          ${industryPains.map(pain => `<li>${pain}</li>`).join('')}
+        </ul>
+        
+        ${data.painPoints ? `
+        <h3>Your Specific Situation:</h3>
+        <ul>
+          ${data.painPoints.split('\n').filter(p => p.trim()).map(point => `<li><span class="highlight">${point.trim()}</span></li>`).join('')}
+        </ul>
+        ` : ''}
+        
+        <div class="competitive-advantage">
+          <h4>Discovery Question:</h4>
+          <p><em>"Which of these challenges resonates most with your current situation at ${data.prospect}? What would solving these problems mean for your business?"</em></p>
+        </div>
+      `
+    },
+    {
+      number: 4,
+      title: "How Quad Solves These Problems",
+      duration: "6 min",
+      content: `
+        <h2>Quad's Approach to These Challenges</h2>
+        
+        <h3>🎯 Better Targeting (Data Intelligence)</h3>
+        <ul>
+          <li><span class="metric">3B+ household data points</span> for precision targeting</li>
+          <li>Behavioral, demographic, and geographic insights</li>
+          <li>Real-time data updates and triggers</li>
+          <li><strong>Result:</strong> Higher response rates, lower acquisition costs</li>
+        </ul>
+        
+        <h3>🎨 Better Creative (Creative Services)</h3>
+        <ul>
+          <li><span class="metric">300+ designers</span> specializing in direct response</li>
+          <li>A/B testing built into every campaign</li>
+          <li>Brand-compliant creative that drives action</li>
+          <li><strong>Result:</strong> Professional creative that actually converts</li>
+        </ul>
+        
+        <h3>⚙️ Better Execution (Technology + Production)</h3>
+        <ul>
+          <li>API triggers connecting your CRM directly to mailbox</li>
+          <li><span class="metric">99.2% quality scores</span> with enterprise-grade production</li>
+          <li>Real-time campaign tracking and optimization</li>
+          <li><strong>Result:</strong> Campaigns that work seamlessly with your operations</li>
+        </ul>
+        
+        <h3>📊 Better Measurement (Attribution)</h3>
+        <ul>
+          <li>Cross-channel attribution connecting mail to online outcomes</li>
+          <li>Unified dashboards showing true campaign ROI</li>
+          <li>Integration with your existing analytics platforms</li>
+          <li><strong>Result:</strong> Clear proof of marketing impact on business results</li>
+        </ul>
+      `
+    },
+    {
+      number: 5,
+      title: "Success Story",
+      duration: "4 min",
+      content: `
+        <h2>Success in ${data.industry.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</h2>
+        
+        ${industryCases.length > 0 ? `
+        <div class="competitive-advantage">
+          <h4>${industryCases[0].client}</h4>
+          <p><strong>Challenge:</strong> ${industryCases[0].challenge}</p>
+          <p><strong>Quad Solution:</strong> ${industryCases[0].solution}</p>
+          <p><strong>Results:</strong> ${industryCases[0].results}</p>
+          <p style="text-align: center; font-size: 1.5rem; font-weight: bold; color: var(--green); margin-top: 16px;">${industryCases[0].metric}</p>
+        </div>
+        ` : `
+        <div class="competitive-advantage">
+          <h4>Similar Company Success</h4>
+          <p><strong>Challenge:</strong> Declining digital performance and need for measurable offline channels</p>
+          <p><strong>Quad Solution:</strong> Integrated direct mail campaigns with cross-channel attribution</p>
+          <p><strong>Results:</strong> 31% improvement in customer acquisition, 23% lower CAC vs digital channels</p>
+          <p style="text-align: center; font-size: 1.5rem; font-weight: bold; color: var(--green); margin-top: 16px;">31% acquisition improvement</p>
+        </div>
+        `}
+        
+        <h3>Why This Success Transfers:</h3>
+        <ul>
+          <li><strong>Same Industry Dynamics:</strong> Similar customer behavior and market conditions</li>
+          <li><strong>Same Scale Challenges:</strong> Need for efficiency and measurable results</li>
+          <li><strong>Same Integration Needs:</strong> Modern marketing requires connected channels</li>
+        </ul>
+        
+        <div class="competitive-advantage">
+          <h4>Discovery Question:</h4>
+          <p><em>"What would a similar improvement mean for ${data.prospect}? How do you currently measure marketing success?"</em></p>
+        </div>
+      `
+    },
+    {
+      number: 6,
+      title: "Potential Solutions for You",
+      duration: "5 min", 
+      content: `
+        <h2>Potential Quad Solutions for ${data.prospect}</h2>
+        
+        <h3>Based on what we've discussed, here's what I'm thinking:</h3>
+        
+        <h4>🎯 At-Home Connect (Automated Direct Mail)</h4>
+        <ul>
+          <li>Connect your CRM/website directly to triggered mail campaigns</li>
+          <li>Automated welcome series, abandon cart, lifecycle campaigns</li>
+          <li>Perfect for nurturing leads and retaining customers</li>
+        </ul>
+        
+        <h4>📊 MergedMail (Cost Optimization)</h4>
+        <ul>
+          <li>Reduce postage costs by <span class="metric">15-25%</span> through co-mailing</li>
+          <li>Professional postal optimization and presorting</li>
+          <li>Delivery tracking and confirmation</li>
+        </ul>
+        
+        <h4>🔬 AMI (Testing & Optimization)</h4>
+        <ul>
+          <li>A/B testing platform for continuous improvement</li>
+          <li><span class="metric">6x faster</span> optimization cycles than traditional testing</li>
+          <li>Statistical significance built into every test</li>
+        </ul>
+        
+        ${data.specialRequirements ? `
+        <h3>Addressing Your Specific Needs:</h3>
+        <ul>
+          ${data.specialRequirements.split('\n').filter(req => req.trim()).map(req => `<li><span class="highlight">${req.trim()}</span></li>`).join('')}
+        </ul>
+        ` : ''}
+        
+        <div class="competitive-advantage">
+          <h4>Discovery Questions:</h4>
+          <ul style="list-style: none;">
+            <li><em>"Which of these capabilities would have the biggest impact on your current challenges?"</em></li>
+            <li><em>"What would success look like for you in the first 90 days?"</em></li>
+            <li><em>"How are you currently handling these marketing challenges?"</em></li>
+          </ul>
+        </div>
+      `
+    },
+    {
+      number: 7,
+      title: "Next Steps Discussion",
+      duration: "5 min",
+      content: `
+        <h2>Where Do We Go from Here?</h2>
+        
+        <h3>If this sounds like it could be valuable for ${data.prospect}...</h3>
+        
+        <h4>Option 1: Technical Deep Dive</h4>
+        <ul>
+          <li>45-60 minute session with our technical team</li>
+          <li>Review your current tech stack and integration options</li>
+          <li>Specific solutions architecture and timeline</li>
+        </ul>
+        
+        <h4>Option 2: Pilot Campaign Proposal</h4>
+        <ul>
+          <li>Design a limited-scale pilot campaign</li>
+          <li>Specific success metrics and measurement plan</li>
+          <li>Low-risk way to prove value before larger commitment</li>
+        </ul>
+        
+        <h4>Option 3: Executive Presentation</h4>
+        <ul>
+          <li>Present to broader stakeholder group</li>
+          <li>Business case and ROI projections</li>
+          <li>Strategic partnership discussion</li>
+        </ul>
+        
+        <h3>Questions for You:</h3>
+        <ul>
+          <li>What resonated most from our conversation today?</li>
+          <li>Who else would be involved in evaluating a solution like this?</li>
+          <li>What's your timeline for making a decision on new marketing partners?</li>
+          <li>What would you need to see to move forward with a pilot?</li>
+        </ul>
+        
+        <div class="competitive-advantage">
+          <h4>My Commitment to You</h4>
+          <p>Whether or not Quad is the right fit, I want to make sure you have the information you need to solve these challenges. Let's schedule our next conversation based on what would be most valuable for ${data.prospect}.</p>
+        </div>
+      `
+    }
+  ];
+}
+
+function generateExecutiveDeck(data) {
+  const industryPains = INDUSTRY_PAIN_POINTS[data.industry] || [];
+  const industryCases = CASE_STUDIES[data.industry] || [];
+  
+  return [
+    {
+      number: 1,
+      title: "Executive Summary", 
+      duration: "2 min",
+      content: `
+        <h2>Strategic Partnership Proposal</h2>
+        <h3>${data.prospect} + Quad Marketing Experience Company</h3>
+        
+        <div class="competitive-advantage">
+          <h4>The Opportunity</h4>
+          <p>Transform ${data.prospect}'s marketing effectiveness by consolidating multiple vendors into a single, integrated marketing experience platform that combines data intelligence, creative excellence, production scale, and advanced technology.</p>
+        </div>
+        
+        <h3>Expected Business Impact:</h3>
+        <ul>
+          <li><strong>Revenue Growth:</strong> <span class="metric">15-30% improvement</span> in marketing-driven revenue</li>
+          <li><strong>Cost Efficiency:</strong> <span class="metric">20-35% reduction</span> in total marketing operations costs</li>
+          <li><strong>Speed to Market:</strong> <span class="metric">6x faster</span> campaign deployment and optimization</li>
+          <li><strong>Operational Excellence:</strong> Single-vendor relationship replacing 3-5 current partners</li>
+        </ul>
+        
+        <h3>Strategic Advantages:</h3>
+        <ul>
+          <li>Integrated data and creative drives superior campaign performance</li>
+          <li>Enterprise-scale technology platform with modern API architecture</li>
+          <li>Cross-channel attribution providing true marketing ROI visibility</li>
+          <li>50+ years of experience with Fortune 500 stability and innovation</li>
+        </ul>
+      `
+    },
+    {
+      number: 2,
+      title: "Market Context & Challenges",
+      duration: "3 min",
+      content: `
+        <h2>The Marketing Landscape in ${data.industry.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</h2>
+        
+        <h3>Industry-Wide Challenges:</h3>
+        <ul>
+          ${industryPains.map(pain => `<li>${pain}</li>`).join('')}
+        </ul>
+        
+        <h3>The Cost of Inaction:</h3>
+        <ul>
+          <li><strong>Rising Acquisition Costs:</strong> Digital channels becoming more expensive and less effective</li>
+          <li><strong>Attribution Gaps:</strong> 40-60% of marketing impact going unmeasured</li>
+          <li><strong>Vendor Proliferation:</strong> Managing multiple vendors creates inefficiency and gaps</li>
+          <li><strong>Technology Debt:</strong> Legacy systems limiting agility and personalization</li>
+        </ul>
+        
+        <div class="competitive-advantage">
+          <h4>The Strategic Imperative</h4>
+          <p>Companies that successfully integrate their marketing technology and vendor relationships are seeing 2-3x better performance than those managing fragmented approaches. This isn't just about efficiency - it's about competitive advantage.</p>
+        </div>
+        
+        ${data.painPoints ? `
+        <h3>${data.prospect}-Specific Context:</h3>
+        <ul>
+          ${data.painPoints.split('\n').filter(p => p.trim()).map(point => `<li><span class="highlight">${point.trim()}</span></li>`).join('')}
+        </ul>
+        ` : ''}
+      `
+    },
+    {
+      number: 3,
+      title: "Quad's Strategic Position",
+      duration: "4 min",
+      content: `
+        <h2>Why Quad is Uniquely Positioned</h2>
+        
+        <h3>The Only Integrated Marketing Experience Platform:</h3>
+        
+        <table>
+          <tr>
+            <th>Capability</th>
+            <th>Quad Advantage</th>
+            <th>Competitive Landscape</th>
+          </tr>
+          <tr>
+            <td><strong>Data Intelligence</strong></td>
+            <td>3B+ household data points, real-time triggers</td>
+            <td>Acxiom (data only), Epsilon (limited integration)</td>
+          </tr>
+          <tr>
+            <td><strong>Creative Excellence</strong></td>
+            <td>300+ designers optimizing for response</td>
+            <td>Agencies optimize for awards, not performance</td>
+          </tr>
+          <tr>
+            <td><strong>Production Scale</strong></td>
+            <td>8B pieces annually, 99.2% quality</td>
+            <td>RRD (production only), local printers (no scale)</td>
+          </tr>
+          <tr>
+            <td><strong>Technology Platform</strong></td>
+            <td>API-first, enterprise integrations</td>
+            <td>Lob (limited scale), Broadridge (FinServ only)</td>
+          </tr>
+          <tr>
+            <td><strong>Attribution & Analytics</strong></td>
+            <td>Cross-channel attribution, unified dashboards</td>
+            <td>Google/Adobe (digital only), no mail integration</td>
+          </tr>
+        </table>
+        
+        <h3>Financial Strength & Stability:</h3>
+        <ul>
+          <li><span class="metric">$4B+ annual revenue</span> - Fortune 500 financial stability</li>
+          <li><span class="metric">50+ year track record</span> - survived every economic cycle</li>
+          <li><span class="metric">14,000+ employees</span> - enterprise-scale resources and support</li>
+          <li><span class="metric">40+ facilities</span> - geographic redundancy and speed</li>
+        </ul>
+        
+        <div class="competitive-advantage">
+          <h4>The Integration Advantage</h4>
+          <p>While competitors excel in one area, Quad's integrated platform creates synergies impossible to achieve with multiple vendors. Data informs creative, creative optimizes production, technology enables measurement, and measurement improves data - creating a virtuous cycle of performance improvement.</p>
+        </div>
+      `
+    },
+    {
+      number: 4,
+      title: "Proven ROI in Your Industry",
+      duration: "4 min",
+      content: `
+        <h2>Executive-Level Results in ${data.industry.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</h2>
+        
+        ${industryCases.map(study => `
+        <div class="competitive-advantage">
+          <h4>${study.client} - ${study.metric}</h4>
+          <table>
+            <tr>
+              <td><strong>Challenge:</strong></td>
+              <td>${study.challenge}</td>
+            </tr>
+            <tr>
+              <td><strong>Solution:</strong></td>
+              <td>${study.solution}</td>
+            </tr>
+            <tr>
+              <td><strong>Business Impact:</strong></td>
+              <td>${study.results}</td>
+            </tr>
+          </table>
+        </div>
+        `).join('')}
+        
+        <h3>Cross-Industry Executive Outcomes:</h3>
+        <table>
+          <tr>
+            <th>Metric</th>
+            <th>Average Improvement</th>
+            <th>Best-in-Class</th>
+            <th>Time to Value</th>
+          </tr>
+          <tr>
+            <td>Customer Acquisition Cost</td>
+            <td>-23%</td>
+            <td>-41%</td>
+            <td>60-90 days</td>
+          </tr>
+          <tr>
+            <td>Campaign Response Rate</td>
+            <td>+31%</td>
+            <td>+58%</td>
+            <td>30-60 days</td>
+          </tr>
+          <tr>
+            <td>Marketing ROI</td>
+            <td>+28%</td>
+            <td>+45%</td>
+            <td>90-120 days</td>
+          </tr>
+          <tr>
+            <td>Time to Launch</td>
+            <td>-65%</td>
+            <td>-78%</td>
+            <td>Immediate</td>
+          </tr>
+        </table>
+        
+        <h3>Strategic Value Beyond Metrics:</h3>
+        <ul>
+          <li><strong>Vendor Consolidation:</strong> Replace 3-5 marketing vendors with single strategic partner</li>
+          <li><strong>Executive Visibility:</strong> Unified dashboards providing true marketing attribution</li>
+          <li><strong>Competitive Differentiation:</strong> Integrated capabilities competitors can't match</li>
+          <li><strong>Scalable Foundation:</strong> Platform grows with business without vendor proliferation</li>
+        </ul>
+      `
+    },
+    {
+      number: 5,
+      title: "Strategic Partnership Model",
+      duration: "3 min",
+      content: `
+        <h2>Partnership Framework for ${data.prospect}</h2>
+        
+        <h3>Tiered Partnership Approach:</h3>
+        
+        <h4>Phase 1: Foundation (Months 1-3)</h4>
+        <ul>
+          <li><strong>Core Platform:</strong> At-Home Connect + MergedMail integration</li>
+          <li><strong>Key Campaigns:</strong> 2-3 high-impact campaigns with full measurement</li>
+          <li><strong>Success Metrics:</strong> Measurable improvement vs. current performance</li>
+          <li><strong>Investment Level:</strong> Pilot-scale commitment with proven ROI</li>
+        </ul>
+        
+        <h4>Phase 2: Expansion (Months 4-6)</h4>
+        <ul>
+          <li><strong>Advanced Capabilities:</strong> AMI testing platform + Connex attribution</li>
+          <li><strong>Broader Portfolio:</strong> Full campaign portfolio migration</li>
+          <li><strong>Success Metrics:</strong> Portfolio-wide performance improvement</li>
+          <li><strong>Investment Level:</strong> Full platform access and optimization</li>
+        </ul>
+        
+        <h4>Phase 3: Strategic Partnership (Months 7+)</h4>
+        <ul>
+          <li><strong>Innovation Partnership:</strong> Early access to new capabilities and features</li>
+          <li><strong>Category Leadership:</strong> Industry case study and thought leadership</li>
+          <li><strong>Success Metrics:</strong> Market leadership in marketing effectiveness</li>
+          <li><strong>Investment Level:</strong> Strategic partnership with preferred pricing</li>
+        </ul>
+        
+        <h3>Executive Support Structure:</h3>
+        <ul>
+          <li><strong>Executive Sponsor:</strong> VP-level relationship management and escalation</li>
+          <li><strong>Client Success Manager:</strong> Day-to-day partnership management and optimization</li>
+          <li><strong>Technical Leadership:</strong> Integration oversight and platform evolution</li>
+          <li><strong>Creative Leadership:</strong> Brand stewardship and campaign excellence</li>
+        </ul>
+      `
+    },
+    {
+      number: 6,
+      title: "Investment & Returns",
+      duration: "3 min",
+      content: `
+        <h2>Investment Framework & Expected Returns</h2>
+        
+        <h3>Total Economic Impact:</h3>
+        
+        <table>
+          <tr>
+            <th>Investment Area</th>
+            <th>Annual Investment</th>
+            <th>Expected Return</th>
+            <th>Net Benefit</th>
+          </tr>
+          <tr>
+            <td>Platform & Technology</td>
+            <td>${data.budgetRange === '1m-plus' ? '$200-400K' : data.budgetRange === '500k-1m' ? '$150-300K' : data.budgetRange === '250k-500k' ? '$100-200K' : '$75-150K'}</td>
+            <td>300-500%</td>
+            <td>${data.budgetRange === '1m-plus' ? '$600K-2M' : data.budgetRange === '500k-1m' ? '$450K-1.5M' : data.budgetRange === '250k-500k' ? '$300K-1M' : '$225K-750K'}</td>
+          </tr>
+          <tr>
+            <td>Creative & Campaign Development</td>
+            <td>${data.budgetRange === '1m-plus' ? '$300-500K' : data.budgetRange === '500k-1m' ? '$200-350K' : data.budgetRange === '250k-500k' ? '$150-250K' : '$100-200K'}</td>
+            <td>200-350%</td>
+            <td>${data.budgetRange === '1m-plus' ? '$600K-1.75M' : data.budgetRange === '500k-1m' ? '$400K-1.2M' : data.budgetRange === '250k-500k' ? '$300K-875K' : '$200K-700K'}</td>
+          </tr>
+          <tr>
+            <td>Production & Media</td>
+            <td>Variable by volume</td>
+            <td>150-250%</td>
+            <td>15-25% cost reduction</td>
+          </tr>
+        </table>
+        
+        <h3>Beyond Financial Returns:</h3>
+        <ul>
+          <li><strong>Risk Reduction:</strong> Single vendor relationship vs. managing multiple partnerships</li>
+          <li><strong>Speed to Market:</strong> 6x faster campaign deployment and optimization</li>
+          <li><strong>Competitive Advantage:</strong> Integrated capabilities competitors can't replicate</li>
+          <li><strong>Strategic Flexibility:</strong> Platform scales with business growth and evolution</li>
+        </ul>
+        
+        <h3>Investment Protection:</h3>
+        <ul>
+          <li><strong>Performance Guarantees:</strong> Measurable improvement within 90 days</li>
+          <li><strong>Phased Implementation:</strong> Pilot success before full commitment</li>
+          <li><strong>Enterprise Support:</strong> Dedicated resources ensuring implementation success</li>
+          <li><strong>Financial Stability:</strong> Fortune 500 partner with 50+ year track record</li>
+        </ul>
+      `
+    },
+    {
+      number: 7,
+      title: "Implementation Roadmap",
+      duration: "2 min",
+      content: `
+        <h2>90-Day Executive Implementation Plan</h2>
+        
+        <h3>Executive Milestones:</h3>
+        
+        <table>
+          <tr>
+            <th>Milestone</th>
+            <th>Timeline</th>
+            <th>Executive Deliverable</th>
+            <th>Success Criteria</th>
+          </tr>
+          <tr>
+            <td>Partnership Launch</td>
+            <td>Day 1</td>
+            <td>Executive kickoff and team introductions</td>
+            <td>Clear communication plan and success metrics</td>
+          </tr>
+          <tr>
+            <td>Technical Integration</td>
+            <td>Day 30</td>
+            <td>Platform operational with first campaigns live</td>
+            <td>API connectivity and data flow confirmed</td>
+          </tr>
+          <tr>
+            <td>Pilot Results</td>
+            <td>Day 60</td>
+            <td>Performance analysis vs. baseline</td>
+            <td>Measurable improvement in key metrics</td>
+          </tr>
+          <tr>
+            <td>Full Deployment</td>
+            <td>Day 90</td>
+            <td>Complete portfolio migration and optimization</td>
+            <td>All campaigns optimized and performing above baseline</td>
+          </tr>
+        </table>
+        
+        <h3>Executive Communication Plan:</h3>
+        <ul>
+          <li><strong>Weekly:</strong> Progress updates and metric dashboards</li>
+          <li><strong>Monthly:</strong> Executive reviews with Quad leadership</li>
+          <li><strong>Quarterly:</strong> Strategic planning and roadmap updates</li>
+          <li><strong>Annual:</strong> Partnership review and innovation planning</li>
+        </ul>
+        
+        <h3>Risk Mitigation:</h3>
+        <ul>
+          <li><strong>Dedicated Executive Sponsor:</strong> VP-level ownership and escalation path</li>
+          <li><strong>Proven Methodology:</strong> 1,000+ successful enterprise implementations</li>
+          <li><strong>Performance Guarantees:</strong> Success metrics with service level agreements</li>
+          <li><strong>Change Management:</strong> Comprehensive training and adoption support</li>
+        </ul>
+      `
+    },
+    {
+      number: 8,
+      title: "Strategic Decision Framework",
+      duration: "2 min", 
+      content: `
+        <h2>Executive Decision Framework</h2>
+        
+        <h3>Key Decision Criteria:</h3>
+        
+        <table>
+          <tr>
+            <th>Criteria</th>
+            <th>Quad Position</th>
+            <th>Competitive Advantage</th>
+          </tr>
+          <tr>
+            <td><strong>Strategic Fit</strong></td>
+            <td>Integrated platform aligning with digital transformation</td>
+            <td>Only vendor providing complete marketing technology stack</td>
+          </tr>
+          <tr>
+            <td><strong>Financial Impact</strong></td>
+            <td>200-400% ROI with 60-90 day payback</td>
+            <td>Vendor consolidation reduces costs while improving performance</td>
+          </tr>
+          <tr>
+            <td><strong>Risk Profile</strong></td>
+            <td>Low-risk pilot approach with performance guarantees</td>
+            <td>Fortune 500 stability with startup-like innovation</td>
+          </tr>
+          <tr>
+            <td><strong>Scalability</strong></td>
+            <td>Platform scales with business growth</td>
+            <td>Single platform replacing multiple point solutions</td>
+          </tr>
+        </table>
+        
+        <h3>Questions for Executive Consideration:</h3>
+        <ul>
+          <li><em>How important is marketing vendor consolidation to your operational strategy?</em></li>
+          <li><em>What would 25-40% improvement in marketing ROI mean for ${data.prospect}?</em></li>
+          <li><em>How does integrated marketing technology align with your digital transformation goals?</em></li>
+          <li><em>What's your timeline for making strategic marketing technology decisions?</em></li>
+        </ul>
+        
+        <div class="competitive-advantage">
+          <h4>The Strategic Opportunity</h4>
+          <p>This represents more than a vendor decision - it's an opportunity to gain competitive advantage through integrated marketing capabilities that your competitors can't replicate through fragmented vendor relationships.</p>
+        </div>
+      `
+    },
+    {
+      number: 9,
+      title: "Next Steps & Partnership Launch",
+      duration: "2 min",
+      content: `
+        <h2>Recommended Next Steps</h2>
+        
+        <h3>Executive Track (Recommended):</h3>
+        <ol>
+          <li><strong>Technical Due Diligence</strong> - IT and MarTech team review (Week 1)</li>
+          <li><strong>Pilot Campaign Design</strong> - Define success metrics and scope (Week 2)</li>
+          <li><strong>Executive Agreement</strong> - Contract execution and partnership launch (Week 3)</li>
+          <li><strong>Implementation Kickoff</strong> - Team introductions and project launch (Week 4)</li>
+        </ol>
+        
+        <h3>Alternative: Expanded Evaluation</h3>
+        <ol>
+          <li><strong>Stakeholder Presentations</strong> - Present to broader evaluation team</li>
+          <li><strong>Vendor Comparison</strong> - Formal RFP process if required</li>
+          <li><strong>Pilot Competition</strong> - Head-to-head pilot with other vendors</li>
+        </ol>
+        
+        <h3>Success Accelerators:</h3>
+        <ul>
+          <li><strong>Executive Sponsorship:</strong> Clear leadership support for transformation</li>
+          <li><strong>Dedicated Resources:</strong> Internal team allocation for implementation</li>
+          <li><strong>Success Metrics:</strong> Clear definition of what success looks like</li>
+          <li><strong>Communication Plan:</strong> Stakeholder alignment and change management</li>
+        </ul>
+        
+        <div class="competitive-advantage">
+          <h4>My Commitment to ${data.prospect}</h4>
+          <p>Quad is ready to be your strategic marketing partner. We bring 50 years of experience, Fortune 500 stability, and startup-like innovation to help ${data.prospect} achieve marketing excellence.</p>
+          
+          <p style="text-align: center; margin-top: 24px;">
+            <strong>Ready to transform your marketing capabilities?</strong><br>
+            Let's schedule our technical review and begin this partnership.
+          </p>
+        </div>
+      `
+    }
+  ];
+}
+
+function generateTechnicalDeck(data) {
+  // Technical presentation focused on platform capabilities, integrations, etc.
+  return [
+    {
+      number: 1,
+      title: "Technical Architecture Overview",
+      duration: "4 min",
+      content: `
+        <h2>Quad's Technology Platform Architecture</h2>
+        
+        <h3>Platform Overview:</h3>
+        <ul>
+          <li><strong>API-First Design:</strong> RESTful APIs with comprehensive documentation</li>
+          <li><strong>Cloud-Native Infrastructure:</strong> AWS-hosted with 99.9% uptime SLA</li>
+          <li><strong>Microservices Architecture:</strong> Scalable, resilient, and independently deployable</li>
+          <li><strong>Real-Time Processing:</strong> Sub-second response times for triggered campaigns</li>
+        </ul>
+        
+        <h3>Core Technology Stack:</h3>
+        <table>
+          <tr>
+            <th>Layer</th>
+            <th>Technology</th>
+            <th>Capabilities</th>
+          </tr>
+          <tr>
+            <td><strong>Data Layer</strong></td>
+            <td>Hadoop, Spark, PostgreSQL</td>
+            <td>3B+ data points, real-time analytics, ML processing</td>
+          </tr>
+          <tr>
+            <td><strong>Application Layer</strong></td>
+            <td>Java, Node.js, Python</td>
+            <td>Campaign management, automation, optimization</td>
+          </tr>
+          <tr>
+            <td><strong>Integration Layer</strong></td>
+            <td>REST APIs, Webhooks, ETL</td>
+            <td>CRM, marketing automation, e-commerce integration</td>
+          </tr>
+          <tr>
+            <td><strong>Presentation Layer</strong></td>
+            <td>React, Angular, Mobile SDKs</td>
+            <td>Campaign builder, dashboards, mobile apps</td>
+          </tr>
+        </table>
+        
+        <div class="competitive-advantage">
+          <h4>Technical Differentiators</h4>
+          <p>Unlike competitors who bolt technology onto legacy infrastructure, Quad built our platform from the ground up for modern marketing needs - API-first, cloud-native, and designed for enterprise scale.</p>
+        </div>
+      `
+    }
+    // Additional technical slides would follow
+  ];
+}
+
+function generateCompetitiveDeck(data) {
+  const competitive = COMPETITIVE_POSITIONING['vs-inhouse']; // Default, could be dynamic
+  
+  return [
+    {
+      number: 1,
+      title: "Competitive Landscape Analysis",
+      duration: "3 min",
+      content: `
+        <h2>Direct Marketing Vendor Landscape</h2>
+        
+        <h3>Current Market Players:</h3>
+        <table>
+          <tr>
+            <th>Vendor</th>
+            <th>Core Strength</th>
+            <th>Key Limitation</th>
+            <th>Best Use Case</th>
+          </tr>
+          <tr>
+            <td><strong>RR Donnelley</strong></td>
+            <td>Production scale and quality</td>
+            <td>Limited data and technology capabilities</td>
+            <td>High-volume production with existing creative</td>
+          </tr>
+          <tr>
+            <td><strong>Lob</strong></td>
+            <td>Developer-friendly API and ease of integration</td>
+            <td>Limited production scale and format options</td>
+            <td>Simple triggered postcards and letters</td>
+          </tr>
+          <tr>
+            <td><strong>Broadridge</strong></td>
+            <td>Financial services compliance and expertise</td>
+            <td>Limited cross-industry capabilities</td>
+            <td>FinServ regulatory and compliance mail</td>
+          </tr>
+          <tr>
+            <td><strong>In-House</strong></td>
+            <td>Complete control and brand alignment</td>
+            <td>Lack of scale, expertise, and technology</td>
+            <td>Very small volume with unlimited resources</td>
+          </tr>
+          <tr>
+            <td><strong>Quad</strong></td>
+            <td>Integrated platform combining all capabilities</td>
+            <td>Premium pricing vs. single-point solutions</td>
+            <td>Strategic marketing partnership at enterprise scale</td>
+          </tr>
+        </table>
+        
+        ${data.competitiveContext ? `
+        <h3>Your Current Competitive Context:</h3>
+        <p>${data.competitiveContext}</p>
+        ` : ''}
+      `
+    }
+    // Additional competitive slides would follow
+  ];
+}
+
+// RENDERING FUNCTIONS
+function renderDeck() {
+  const viewer = document.getElementById('deckViewer');
+  
+  if (generatedSlides.length === 0) {
+    viewer.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <div class="empty-title">No Presentation Generated</div>
+        <div class="empty-description">Configure your presentation requirements and generate slides to view your deck here.</div>
+      </div>
+    `;
+    return;
+  }
+  
+  viewer.innerHTML = generatedSlides.map(slide => `
+    <div class="slide-container">
+      <div class="slide-header">
+        <div class="slide-number">Slide ${slide.number}</div>
+        <div class="slide-title">${slide.title}</div>
+        <div class="slide-duration">${slide.duration}</div>
+      </div>
+      <div class="slide-content">
+        ${slide.content}
+      </div>
+    </div>
+  `).join('');
+}
+
+function showProcessing() {
+  document.getElementById('processingOverlay').classList.add('active');
+  document.getElementById('generateText').textContent = '⏳ Generating Presentation...';
+  document.querySelector('.generate-btn').disabled = true;
+}
+
+function hideProcessing() {
+  document.getElementById('processingOverlay').classList.remove('active');
+  document.getElementById('generateText').textContent = '🚀 Generate Enterprise Presentation';
+  document.querySelector('.generate-btn').disabled = false;
+}
+
+function enableActions() {
+  document.getElementById('previewBtn').disabled = false;
+  document.getElementById('saveBtn').disabled = false;
+  document.getElementById('exportBtn').disabled = false;
+}
+
+// EXPORT FUNCTION
+function exportDeck() {
+  if (generatedSlides.length === 0) {
+    alert('Please generate a presentation first.');
+    return;
+  }
+  
+  const prospectName = document.getElementById('prospectName').value.trim() || 'Prospect';
+  const deckType = currentDeckType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const timestamp = new Date().toISOString().split('T')[0];
+  
+  // Create HTML presentation
+  const presentationHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${prospectName} - ${deckType} Presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;line-height:1.6;color:#333;background:#fff;padding:40px}
+.presentation-header{text-align:center;margin-bottom:60px;border-bottom:3px solid #E31837;padding-bottom:40px}
+.presentation-title{font-family:'Playfair Display',serif;font-size:2.5rem;color:#E31837;margin-bottom:16px}
+.presentation-subtitle{font-size:1.2rem;color:#666;margin-bottom:8px}
+.presentation-meta{font-size:.9rem;color:#888}
+.slide-page{page-break-after:always;margin-bottom:60px;min-height:600px}
+.slide-page:last-child{page-break-after:avoid}
+.slide-header{background:#E31837;color:#fff;padding:20px;margin-bottom:30px;display:flex;justify-content:space-between;align-items:center}
+.slide-number{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.9rem}
+.slide-title{font-size:1.4rem;font-weight:700}
+.slide-duration{font-size:.8rem;opacity:.8}
+.slide-content{padding:0 20px}
+.slide-content h2{color:#E31837;font-size:1.8rem;margin-bottom:24px;font-family:'Playfair Display',serif}
+.slide-content h3{color:#333;font-size:1.3rem;margin-bottom:16px;margin-top:24px}
+.slide-content h4{color:#00AEEF;font-size:1.1rem;margin-bottom:12px;margin-top:20px}
+.slide-content ul{margin:16px 0;padding-left:20px}
+.slide-content li{margin-bottom:8px;line-height:1.6}
+.slide-content table{width:100%;border-collapse:collapse;margin:20px 0;font-size:.9rem}
+.slide-content th{background:#f5f5f5;padding:12px;text-align:left;border:1px solid #ddd;font-weight:600;color:#E31837}
+.slide-content td{padding:12px;border:1px solid #ddd}
+.slide-content tr:nth-child(even){background:#f9f9f9}
+.highlight{background:#E5F5FF;padding:2px 4px;border-radius:3px;color:#00AEEF;font-weight:600}
+.metric{background:#E5F9E5;color:#7AC143;padding:2px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-weight:600}
+.competitive-advantage{background:#FFF5F5;border-left:4px solid #E31837;padding:16px;margin:20px 0;border-radius:0 8px 8px 0}
+.competitive-advantage h4{color:#E31837;margin-bottom:8px}
+.footer{text-align:center;margin-top:60px;padding-top:40px;border-top:2px solid #f0f0f0;color:#666;font-size:.9rem}
+.footer strong{color:#E31837}
+@media print{
+  body{padding:20px}
+  .slide-page{page-break-after:always;margin-bottom:0}
+  .slide-header{background:#E31837 !important;-webkit-print-color-adjust:exact}
+  .competitive-advantage{background:#FFF5F5 !important;-webkit-print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+  <div class="presentation-header">
+    <div class="presentation-title">${deckType} Presentation</div>
+    <div class="presentation-subtitle">Prepared for ${prospectName}</div>
+    <div class="presentation-meta">Generated ${new Date().toLocaleDateString()} • Quad Marketing Experience Company</div>
+  </div>
+
+  ${generatedSlides.map(slide => `
+  <div class="slide-page">
+    <div class="slide-header">
+      <div class="slide-number">Slide ${slide.number}</div>
+      <div class="slide-title">${slide.title}</div>
+      <div class="slide-duration">${slide.duration}</div>
+    </div>
+    <div class="slide-content">
+      ${slide.content}
+    </div>
+  </div>
+  `).join('')}
+  
+  <div class="footer">
+    <p><strong>Quad Marketing Experience Company</strong></p>
+    <p>8B+ mail pieces annually • 50+ years of innovation • Complete MX under one roof</p>
+    <p style="margin-top: 16px; font-style: italic;">"We engineer customer experiences, not just campaigns."</p>
+  </div>
+
+  <script>
+    // Auto-print dialog for easy PDF export
+    setTimeout(function() {
+      if (confirm('Export this presentation as PDF?\\n\\nClick OK to open print dialog, then select "Save as PDF" as your destination.')) {
+        window.print();
+      }
+    }, 1000);
+  </script>
+</body>
+</html>`;
+
+  // Create and download the file
+  const blob = new Blob([presentationHTML], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  
+  const filename = `${prospectName.replace(/[^a-z0-9]/gi, '_')}_Quad_${deckType.replace(/\s+/g, '_')}_${timestamp}.html`;
+  
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  // Clean up
+  URL.revokeObjectURL(url);
+  
+  // Show success message
+  setTimeout(() => {
+    alert(`✅ Presentation exported successfully!\n\nFile: ${filename}\n\n📋 How to use:\n1. Open the downloaded HTML file in your browser\n2. Print the page (Ctrl+P or Cmd+P)\n3. Select "Save as PDF" as destination\n4. Your professional presentation is ready!\n\n🎯 The presentation includes all ${generatedSlides.length} slides with:\n• Professional formatting\n• Quad branding\n• Industry-specific content\n• Competitive positioning\n• Actionable next steps`);
+  }, 100);
+}
+
+// OTHER ACTION FUNCTIONS
+function previewDeck() {
+  if (generatedSlides.length === 0) {
+    alert('Please generate a presentation first.');
+    return;
+  }
+  
+  // Open preview in new window
+  const previewWindow = window.open('', '_blank');
+  previewWindow.document.write(`
+    <html>
+    <head>
+      <title>Presentation Preview</title>
+      <style>
+        body { font-family: Inter, sans-serif; padding: 20px; background: #f5f5f5; }
+        .slide { background: white; margin: 20px 0; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .slide-header { background: #E31837; color: white; padding: 15px; margin: -20px -20px 20px -20px; }
+        h2 { color: #E31837; }
+        h3 { color: #333; }
+        table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f2f2f2; }
+      </style>
+    </head>
+    <body>
+      <h1>Presentation Preview</h1>
+      ${generatedSlides.map(slide => `
+        <div class="slide">
+          <div class="slide-header">
+            <strong>Slide ${slide.number}: ${slide.title}</strong> (${slide.duration})
+          </div>
+          ${slide.content}
+        </div>
+      `).join('')}
+    </body>
+    </html>
+  `);
+  previewWindow.document.close();
+}
+
+function saveDraft() {
+  if (generatedSlides.length === 0) {
+    alert('Please generate a presentation first.');
+    return;
+  }
+  
+  const prospectName = document.getElementById('prospectName').value.trim() || 'Draft';
+  const timestamp = new Date().toLocaleString();
+  
+  const draftData = {
+    prospect: prospectName,
+    type: currentDeckType,
+    generated: timestamp,
+    slides: generatedSlides,
+    formData: {
+      industry: document.getElementById('industry').value,
+      companySize: document.getElementById('companySize').value,
+      painPoints: document.getElementById('painPoints').value,
+      budgetRange: document.getElementById('budgetRange').value
+    }
+  };
+  
+  // Save to localStorage
+  const drafts = JSON.parse(localStorage.getItem('quad_presentation_drafts') || '[]');
+  drafts.unshift(draftData);
+  
+  // Keep only last 10 drafts
+  if (drafts.length > 10) {
+    drafts.splice(10);
+  }
+  
+  localStorage.setItem('quad_presentation_drafts', JSON.stringify(drafts));
+  
+  alert(`✅ Draft saved successfully!\n\nSaved: ${prospectName} - ${timestamp}\n\nYour draft has been saved locally and can be accessed from the browser on this device.`);
+}
+
+// INITIALIZE ON LOAD
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('🚀 Advanced Pitch Builder loaded successfully!');
+  
+  // Set default values
+  document.getElementById('meetingDuration').value = '60';
+  document.getElementById('audienceLevel').value = 'vp';
+  
+  // Auto-select first deck type
+  const firstCard = document.querySelector('.deck-type-card');
+  if (firstCard) {
+    firstCard.classList.add('selected');
+    currentDeckType = firstCard.dataset.type;
+  }
+});
+</script>
+</body>
+</html>

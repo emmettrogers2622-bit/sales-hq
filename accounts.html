@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account Intelligence — Quad Sales HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#08090d;--surface:rgba(255,255,255,0.03);--surface2:rgba(255,255,255,0.06);
+--border:rgba(255,255,255,0.08);--text:#eaedf3;--text2:rgba(234,237,243,0.6);
+--red:#E31837;--cyan:#00AEEF;--yellow:#FFD100;--green:#00C853;
+--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.1);
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+h1,h2,h3{font-family:'Playfair Display',serif}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* Background effects */
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+background:radial-gradient(ellipse at 20% 20%,rgba(0,174,239,0.04) 0%,transparent 50%),
+radial-gradient(ellipse at 80% 80%,rgba(227,24,55,0.03) 0%,transparent 50%);
+pointer-events:none;z-index:0}
+
+.container{max-width:1440px;margin:0 auto;padding:24px;position:relative;z-index:1}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;padding:20px 0;margin-bottom:32px;border-bottom:1px solid var(--border)}
+.header h1{font-size:28px;background:linear-gradient(135deg,var(--cyan),var(--text));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header .back-link{color:var(--cyan);text-decoration:none;font-size:14px;opacity:0.7;transition:opacity 0.2s}
+.header .back-link:hover{opacity:1}
+.header-actions{display:flex;gap:12px}
+.btn{padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+.btn:hover{background:var(--surface2);border-color:var(--glass-border)}
+.btn-cyan{border-color:rgba(0,174,239,0.3);color:var(--cyan)}
+.btn-cyan:hover{background:rgba(0,174,239,0.1)}
+
+/* Dashboard */
+.dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px}
+.stat-card{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:16px;padding:20px;position:relative;overflow:hidden;transition:transform 0.2s}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.cyan::before{background:linear-gradient(90deg,var(--cyan),transparent)}
+.stat-card.green::before{background:linear-gradient(90deg,var(--green),transparent)}
+.stat-card.yellow::before{background:linear-gradient(90deg,var(--yellow),transparent)}
+.stat-card.red::before{background:linear-gradient(90deg,var(--red),transparent)}
+.stat-label{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:8px}
+.stat-value{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:600}
+.stat-value.cyan{color:var(--cyan)}
+.stat-value.green{color:var(--green)}
+.stat-value.yellow{color:var(--yellow)}
+.stat-value.red{color:var(--red)}
+.stat-sub{font-size:12px;color:var(--text2);margin-top:4px}
+
+/* Priority breakdown mini bars */
+.priority-bars{display:flex;gap:4px;margin-top:8px}
+.priority-bars .bar{height:6px;border-radius:3px;flex:1;opacity:0.3;transition:opacity 0.2s}
+.priority-bars .bar.active{opacity:1}
+
+/* Filter bar */
+.filter-bar{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px;align-items:center;padding:16px;background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:12px}
+.filter-group{display:flex;align-items:center;gap:8px}
+.filter-group label{font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2)}
+select,input[type="text"]{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s}
+select:focus,input:focus{border-color:var(--cyan)}
+select option{background:#1a1b23;color:#eaedf3}
+input[type="text"]{width:220px}
+.filter-spacer{flex:1}
+.view-toggle{display:flex;gap:4px;background:var(--surface);border-radius:8px;padding:3px;border:1px solid var(--border)}
+.view-toggle button{padding:6px 12px;border:none;background:transparent;color:var(--text2);cursor:pointer;border-radius:6px;font-size:12px;transition:all 0.2s}
+.view-toggle button.active{background:var(--surface2);color:var(--text)}
+.results-count{font-size:13px;color:var(--text2);margin-bottom:16px}
+
+/* Card grid */
+.accounts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px}
+.accounts-grid.table-view{grid-template-columns:1fr}
+
+/* Account card */
+.account-card{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:16px;padding:20px;cursor:pointer;transition:all 0.3s ease;position:relative;overflow:hidden}
+.account-card:hover{border-color:rgba(255,255,255,0.15);transform:translateY(-1px);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.account-card.expanded{grid-column:1/-1}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.company-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;line-height:1.3}
+.status-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
+.status-badge.active{background:rgba(0,200,83,0.15);color:var(--green);border:1px solid rgba(0,200,83,0.3)}
+.status-badge.prospect{background:rgba(0,174,239,0.15);color:var(--cyan);border:1px solid rgba(0,174,239,0.3)}
+.status-badge.winback{background:rgba(255,209,0,0.15);color:var(--yellow);border:1px solid rgba(255,209,0,0.3)}
+.card-location{font-size:13px;color:var(--text2);margin-bottom:8px}
+.card-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.meta-tag{font-size:11px;padding:3px 8px;border-radius:6px;background:var(--surface2);color:var(--text2);font-family:'JetBrains Mono',monospace}
+.meta-tag.industry{border-left:2px solid var(--cyan)}
+.meta-tag.revenue{border-left:2px solid var(--green)}
+.meta-tag.employees{border-left:2px solid var(--yellow)}
+.meta-tag.ttm{border-left:2px solid var(--red)}
+.card-description{font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:12px}
+.priority-stars{display:flex;gap:2px}
+.priority-stars .star{width:16px;height:16px;color:rgba(255,209,0,0.2)}
+.priority-stars .star.filled{color:var(--yellow)}
+
+/* Expanded details */
+.card-details{max-height:0;overflow:hidden;transition:max-height 0.4s ease}
+.account-card.expanded .card-details{max-height:500px}
+.details-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-top:16px;border-top:1px solid var(--border);margin-top:12px}
+.detail-item{font-size:13px}
+.detail-label{color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.detail-value{color:var(--text)}
+.detail-value.product{color:var(--cyan);font-weight:500}
+.detail-value.case-study{color:var(--yellow);font-weight:500}
+.quad-fit{grid-column:1/-1;font-size:13px;line-height:1.5;color:var(--text2)}
+.quad-fit strong{color:var(--text)}
+.direct-mail-indicator{display:inline-flex;align-items:center;gap:4px}
+.dm-dot{width:8px;height:8px;border-radius:50%}
+.dm-dot.likely{background:var(--green)}
+.dm-dot.possible{background:var(--yellow)}
+.dm-dot.unlikely{background:var(--red)}
+
+/* Table view overrides */
+.table-view .account-card{border-radius:8px;padding:14px 20px}
+.table-view .card-header{margin-bottom:0}
+.table-view .company-name{font-size:15px}
+.table-view .card-meta,.table-view .card-description{display:none}
+.table-view .account-card.expanded .card-meta,.table-view .account-card.expanded .card-description{display:flex}
+.table-view .account-card.expanded .card-description{display:block}
+.table-view .card-header{display:grid;grid-template-columns:2fr 100px 120px 100px 100px 80px;align-items:center;gap:12px}
+.table-header{display:none;padding:12px 20px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);
+grid-template-columns:2fr 100px 120px 100px 100px 80px;gap:12px;cursor:pointer}
+.table-view~.table-header,.table-view+.table-header{display:grid}
+.table-header span:hover{color:var(--text)}
+.table-header span.sorted{color:var(--cyan)}
+.th-sort{display:inline-block;margin-left:4px;font-size:10px}
+
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.account-card{animation:fadeIn 0.3s ease both}
+.accounts-grid .account-card:nth-child(1){animation-delay:0.02s}
+.accounts-grid .account-card:nth-child(2){animation-delay:0.04s}
+.accounts-grid .account-card:nth-child(3){animation-delay:0.06s}
+.accounts-grid .account-card:nth-child(4){animation-delay:0.08s}
+.accounts-grid .account-card:nth-child(5){animation-delay:0.1s}
+
+/* Glow effects */
+.account-card.priority-5::after{content:'';position:absolute;top:-1px;right:-1px;width:60px;height:60px;
+background:radial-gradient(circle,rgba(255,209,0,0.15),transparent 70%);pointer-events:none}
+.account-card.priority-4::after{content:'';position:absolute;top:-1px;right:-1px;width:40px;height:40px;
+background:radial-gradient(circle,rgba(0,174,239,0.1),transparent 70%);pointer-events:none}
+
+/* Responsive */
+@media(max-width:768px){
+.accounts-grid{grid-template-columns:1fr}
+.filter-bar{flex-direction:column;align-items:stretch}
+.dashboard{grid-template-columns:repeat(2,1fr)}
+.details-grid{grid-template-columns:1fr}
+}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.15)}
+
+/* Export toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#000;padding:12px 24px;border-radius:12px;font-weight:600;font-size:14px;transform:translateY(100px);opacity:0;transition:all 0.3s ease;z-index:1000}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* Brand logos */
+.brand-logo{width:32px;height:32px;border-radius:6px;object-fit:contain;background:#fff;padding:2px;flex-shrink:0}
+.brand-logo-lg{width:64px;height:64px;border-radius:12px;object-fit:contain;background:#fff;padding:4px}
+.brand-logo.err{display:none}
+.card-header-left{display:flex;align-items:center;gap:12px}
+
+/* Meeting Prep Overlay */
+.prep-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);z-index:3000;display:none;justify-content:center;align-items:flex-start;padding:30px 20px;overflow-y:auto}
+.prep-overlay.open{display:flex}
+.prep-doc{background:var(--bg);border:1px solid var(--glass-border);border-radius:20px;width:100%;max-width:800px;padding:0;animation:fadeIn .25s ease;position:relative}
+.prep-doc-header{padding:24px 32px;background:linear-gradient(135deg,rgba(227,24,55,.1),rgba(0,174,239,.1));border-bottom:1px solid var(--border);border-radius:20px 20px 0 0;display:flex;align-items:center;justify-content:space-between}
+.prep-doc-body{padding:28px 32px}
+.prep-section{margin-bottom:24px}
+.prep-section-title{font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--cyan);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.prep-section-title::before{content:'';width:3px;height:16px;background:var(--cyan);border-radius:2px}
+.prep-item{padding:10px 14px;background:var(--glass);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;font-size:.8rem;line-height:1.6;color:var(--text2)}
+.prep-item strong{color:var(--text)}
+.prep-item .label{color:var(--yellow);font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
+.prep-highlight{border-left:3px solid var(--cyan);padding-left:14px}
+.prep-actions{display:flex;gap:10px;padding:20px 32px;border-top:1px solid var(--border)}
+.prep-actions button{padding:10px 20px;border-radius:10px;border:none;font-size:.8rem;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;transition:.2s}
+@media print{.prep-overlay{position:static;background:#fff;padding:0}.prep-doc{box-shadow:none;border:none;max-width:100%}.prep-actions,.prep-doc-header button{display:none!important}.prep-doc-body{color:#000}.prep-section-title{color:#E31837}.prep-item{border-color:#ddd;background:#f9f9f9;color:#333}}
+
+/* Account Detail Modal */
+.acct-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:2000;display:none;justify-content:center;align-items:flex-start;padding:40px 20px;overflow-y:auto}
+.acct-modal-overlay.open{display:flex}
+.acct-modal{background:var(--bg);border:1px solid var(--glass-border);border-radius:20px;width:100%;max-width:720px;max-height:90vh;overflow-y:auto;position:relative;animation:fadeIn 0.25s ease}
+.acct-modal-header{padding:24px 28px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:1;border-radius:20px 20px 0 0}
+.acct-modal-header .close-btn{background:none;border:none;color:var(--text2);font-size:1.5rem;cursor:pointer;padding:4px 8px;transition:.2s;line-height:1}
+.acct-modal-header .close-btn:hover{color:var(--text)}
+.acct-modal-body{padding:24px 28px}
+.acct-section{margin-bottom:24px}
+.acct-section-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:10px;font-weight:600}
+.acct-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.acct-detail-item .label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.acct-detail-item .value{font-size:14px;color:var(--text);font-weight:500;margin-top:2px}
+.acct-detail-item .value.cyan{color:var(--cyan)}
+.acct-detail-item .value.yellow{color:var(--yellow)}
+.acct-detail-item .value.green{color:var(--green)}
+.acct-detail-item .value.red{color:var(--red)}
+.notes-area{width:100%;min-height:120px;background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:14px;font-family:'Inter',sans-serif;font-size:13px;line-height:1.6;resize:vertical;outline:none;transition:border-color .2s}
+.notes-area:focus{border-color:var(--cyan)}
+.notes-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.notes-meta .saved{font-size:11px;color:var(--green);opacity:0;transition:.3s}
+.notes-meta .saved.show{opacity:1}
+.notes-meta .count{font-size:11px;color:var(--text2)}
+.note-entry{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.note-entry .note-date{font-size:10px;color:var(--text2);margin-bottom:4px;font-family:'JetBrains Mono',monospace}
+.note-entry .note-text{font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap}
+.note-entry .note-del{background:none;border:none;color:var(--text3);font-size:.7rem;cursor:pointer;float:right;opacity:0;transition:.15s}
+.note-entry:hover .note-del{opacity:1}
+.note-entry .note-del:hover{color:var(--red)}
+.add-note-row{display:flex;gap:8px;margin-top:10px}
+.add-note-row .notes-area{min-height:60px;flex:1}
+.add-note-btn{background:linear-gradient(135deg,var(--red),var(--cyan));border:none;color:#fff;padding:10px 20px;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer;transition:.2s;white-space:nowrap;align-self:flex-end}
+.add-note-btn:hover{opacity:.85;transform:translateY(-1px)}
+.has-notes::before{content:'📝';position:absolute;top:8px;right:40px;font-size:12px}
+.edit-field{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+.edit-field:focus{border-color:var(--cyan)}
+.edit-field.sm{padding:6px 8px;font-size:12px}
+.edit-select{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:6px 10px;font-size:12px;outline:none;font-family:'Inter',sans-serif;cursor:pointer}
+.edit-select option{background:#1a1b23;color:#eaedf3}
+.edit-select:focus{border-color:var(--cyan)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.field-row.full{grid-template-columns:1fr}
+.field-group{display:flex;flex-direction:column;gap:4px}
+.field-group .label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);font-weight:600}
+.edit-textarea{width:100%;min-height:60px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-family:'Inter',sans-serif;font-size:13px;line-height:1.5;resize:vertical;outline:none;transition:border-color .2s}
+.edit-textarea:focus{border-color:var(--cyan)}
+.section-divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+.pipe-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:1px}
+.pipe-badge.now{background:rgba(227,24,55,0.2);color:var(--red);border:1px solid rgba(227,24,55,0.4)}
+.pipe-badge.active{background:rgba(255,209,0,0.15);color:var(--yellow);border:1px solid rgba(255,209,0,0.3)}
+.pipe-badge.reset{background:rgba(0,174,239,0.15);color:var(--cyan);border:1px solid rgba(0,174,239,0.3)}
+.pipe-badge.reengage{background:rgba(255,255,255,0.08);color:var(--text2);border:1px solid var(--border)}
+.has-edits::after{content:'✎';position:absolute;top:8px;right:56px;font-size:11px;color:var(--cyan)}
+
+/* Top Opps */
+.opp-card{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:16px;padding:20px;position:relative;overflow:hidden;transition:all 0.3s}
+.opp-card:hover{border-color:rgba(255,255,255,0.2);transform:translateY(-2px)}
+.opp-card .opp-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.opp-card .opp-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:600}
+.opp-card .opp-urgency{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:1px}
+.opp-urgency.now{background:rgba(227,24,55,0.2);color:var(--red);border:1px solid rgba(227,24,55,0.4)}
+.opp-urgency.active{background:rgba(255,209,0,0.15);color:var(--yellow);border:1px solid rgba(255,209,0,0.3)}
+.opp-urgency.reset{background:rgba(0,174,239,0.15);color:var(--cyan);border:1px solid rgba(0,174,239,0.3)}
+.opp-urgency.reengage{background:rgba(255,255,255,0.08);color:var(--text2);border:1px solid var(--border)}
+.opp-money{display:flex;gap:16px;margin-bottom:12px;font-family:'JetBrains Mono',monospace;font-size:13px}
+.opp-money span{display:flex;flex-direction:column;gap:2px}
+.opp-money .label{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2);font-family:'Inter',sans-serif}
+.opp-money .val{font-weight:600}
+.opp-money .val.green{color:var(--green)}
+.opp-money .val.cyan{color:var(--cyan)}
+.opp-status{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:10px;border-left:2px solid var(--border);padding-left:12px}
+.opp-action{font-size:12px;color:var(--text);line-height:1.5;background:rgba(0,174,239,0.06);border:1px solid rgba(0,174,239,0.15);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+.opp-action strong{color:var(--cyan)}
+.opp-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:11px}
+.opp-meta .tag{padding:3px 8px;border-radius:6px;background:var(--surface2);color:var(--text2)}
+.opp-kpis{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.opp-kpis .kpi{font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(255,209,0,0.1);color:var(--yellow);border:1px solid rgba(255,209,0,0.2)}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<div>
+<h1>Account Intelligence</h1>
+</div>
+<div class="header-actions">
+<a href="accounts-news.html" class="btn btn-cyan" style="text-decoration:none">📰 Account News</a>
+<button class="btn btn-cyan" onclick="exportCSV()">📋 Export CSV</button>
+</div>
+</div>
+
+<div class="dashboard" id="dashboard"></div>
+
+<!-- TOP OPPORTUNITIES -->
+<div style="margin-bottom:32px">
+<h2 style="font-size:22px;margin-bottom:4px;background:linear-gradient(135deg,var(--red),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent">🔥 Top Opportunities Pipeline</h2>
+<p style="font-size:13px;color:var(--text2);margin-bottom:16px">Active deals + high-value targets — <span class="mono" style="color:var(--green)">$3.8M+ revenue</span> / <span class="mono" style="color:var(--cyan)">$4.4M+ reach</span></p>
+<div id="topOppsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:16px"></div>
+</div>
+
+<div class="filter-bar">
+<div class="filter-group">
+<label>Status</label>
+<select id="filterStatus" onchange="renderAccounts()">
+<option value="all">All</option>
+<option value="Client">Active</option>
+<option value="Potential Client">Prospect</option>
+<option value="Past Client">Win-back</option>
+</select>
+</div>
+<div class="filter-group">
+<label>Industry</label>
+<select id="filterIndustry" onchange="renderAccounts()"></select>
+</div>
+<div class="filter-group">
+<label>Priority</label>
+<select id="filterPriority" onchange="renderAccounts()">
+<option value="all">All</option>
+<option value="5">★★★★★ (5)</option>
+<option value="4">★★★★ (4)</option>
+<option value="3">★★★ (3)</option>
+<option value="2">★★ (2)</option>
+<option value="1">★ (1)</option>
+</select>
+</div>
+<div class="filter-group">
+<label>Sort</label>
+<select id="sortBy" onchange="renderAccounts()">
+<option value="priority-desc">Priority ↓</option>
+<option value="priority-asc">Priority ↑</option>
+<option value="name-asc">Name A-Z</option>
+<option value="name-desc">Name Z-A</option>
+<option value="ttm-desc">TTM Revenue ↓</option>
+<option value="revenue-desc">Est. Revenue ↓</option>
+</select>
+</div>
+<div class="filter-spacer"></div>
+<div class="filter-group">
+<input type="text" id="searchBox" placeholder="Search accounts..." oninput="renderAccounts()">
+</div>
+<div class="view-toggle">
+<button class="active" onclick="setView('card',this)">Cards</button>
+<button onclick="setView('table',this)">Table</button>
+</div>
+</div>
+
+<div class="results-count" id="resultsCount"></div>
+<div class="accounts-grid" id="accountsGrid"></div>
+</div>
+
+<div class="toast" id="toast">✓ CSV copied to clipboard</div>
+
+<!-- ACCOUNT DETAIL MODAL -->
+<!-- MEETING PREP OVERLAY -->
+<div class="prep-overlay" id="prepOverlay" onclick="if(event.target===this)closePrepOverlay()">
+  <div class="prep-doc">
+    <div class="prep-doc-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#E31837,#00AEEF,#FFD100);display:flex;align-items:center;justify-content:center"><span style="font-size:1.1rem;font-weight:900;color:#fff;font-family:serif">Q</span></div>
+        <div>
+          <div style="font-size:1rem;font-weight:800;color:var(--text)" id="prepTitle">Meeting Prep</div>
+          <div style="font-size:.7rem;color:var(--text2)" id="prepSubtitle">Generated by Quad Sales HQ</div>
+        </div>
+      </div>
+      <button onclick="closePrepOverlay()" style="background:none;border:none;color:var(--text2);font-size:1.3rem;cursor:pointer">✕</button>
+    </div>
+    <div class="prep-doc-body" id="prepBody"></div>
+    <div class="prep-actions">
+      <button onclick="copyPrep()" style="background:linear-gradient(135deg,#E31837,#00AEEF);color:#fff;flex:1">📋 Copy to Clipboard</button>
+      <button onclick="window.print()" style="background:var(--glass);color:var(--text);border:1px solid var(--border)">🖨️ Print</button>
+      <button onclick="closePrepOverlay()" style="background:var(--glass);color:var(--text);border:1px solid var(--border)">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="acct-modal-overlay" id="acctModal" onclick="if(event.target===this)closeAcctModal()">
+  <div class="acct-modal">
+    <div class="acct-modal-header">
+      <div style="display:flex;align-items:center;gap:16px">
+        <img id="modalLogo" class="brand-logo-lg" src="" onerror="this.style.display='none'">
+        <div>
+          <h2 id="modalName" style="font-size:22px;margin-bottom:4px"></h2>
+          <div id="modalSubtitle" style="font-size:13px;color:var(--text2)"></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="generateMeetingPrep()" style="background:linear-gradient(135deg,#E31837,#00AEEF);color:#fff;border:none;padding:8px 16px;border-radius:10px;font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:.2s;font-family:Inter,sans-serif" onmouseenter="this.style.transform='scale(1.05)'" onmouseleave="this.style.transform=''">🎤 Meeting Prep</button>
+        <span id="saveIndicator" style="font-size:11px;color:var(--green);opacity:0;transition:.3s">✓ Saved</span>
+        <button class="close-btn" onclick="closeAcctModal()">✕</button>
+      </div>
+    </div>
+    <div class="acct-modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ===== BRAND LOGO MAPPING =====
+const LOGO_DOMAINS={
+'Canvas Credit Union':'canvascu.com','Carparts.com Inc':'carparts.com','Liberty Debt Relief LLC':'libertydebtrelief.com',
+'Mattress Firm Inc.':'mattressfirm.com','Prudent FS Inc':'prudentfs.com','SoFi Lending Corp.':'sofi.com',
+'The PNC Financial Services Group Inc':'pnc.com','Verizon Wireless Inc.':'verizon.com','Affirm Inc.':'affirm.com',
+'Allo Communications LLC':'allocommunications.com','American Furniture Warehouse Co Inc':'afw.com',
+'Atlassian Corporation':'atlassian.com','Authority Brands LLC':'authoritybrands.com','Battlbox LLC':'battlbox.com',
+'Brakes Plus Inc':'brakesplus.com','Buddy\'s Newco LLC':'buddysrto.com','CHOMPS':'chomps.com',
+'Country Mutual Insurance Co Inc.':'countryfinancial.com','Credit Associates LLC':'creditassociates.com',
+'CrossCountry Mortgage LLC':'crosscountrymortgage.com','C Spire Advanced Data Solutions LLC':'cspire.com',
+'Davita Inc.':'davita.com','Deckers Outdoor Corporation':'deckers.com','Eargo Inc.':'eargo.com',
+'Empower Annuity Insurance Company of America':'empower.com','Exclusive Resorts LLC':'exclusiveresorts.com',
+'Expedia Group Inc.':'expedia.com','GoPro Inc.':'gopro.com','Greenlight Networks LLC':'greenlightnetworks.com',
+'Inspirato LLC':'inspirato.com','Janus Henderson Investors':'janushenderson.com','Keen Inc':'keenfootwear.com',
+'Koia':'drinkkoia.com','Lancer Skincare LLC':'lancerskincare.com','LendingPoint LLC':'lendingpoint.com',
+'Massey Services Inc':'masseyservices.com','NBH Bank':'nbhbank.com','Osaic Inc':'osaic.com',
+'Patriot Mobile LLC':'patriotmobile.com','Publicis USA Production Solutions Inc':'publicis.com',
+'PureTalk Holdings Inc':'puretalkusa.com','Resident Home LLC':'nectarsleep.com','Sonic Telecom LLC':'sonic.com',
+'Surf Inc.':'surf.com','Tachus LLC':'tachus.com','The Tile Shop Inc':'tileshop.com','Thule Inc.':'thule.com',
+'Ting Fiber LLC':'ting.com','Transamerica':'transamerica.com','Travis Credit Union':'traviscu.org',
+'VyStar Credit Union':'vystarcu.org','Vyve Broadband Investments LLC':'vyvebroadband.com',
+'Wealth Enhancement Group LLC':'wealthenhancement.com','Xcel Energy Inc':'xcelenergy.com',
+'General Motors Financial Company Inc.':'gmfinancial.com','Savannah Bee Company Inc.':'savannahbee.com',
+'The Chair King Inc':'chairking.com','Blue Dot Tours LLC':'bluedottours.com','Ryan Lawn & Tree Inc.':'ryanlawn.com',
+'Sail Internet Inc.':'sailinternet.com','First Savings Financial Group Inc.':'firstsavings.com',
+'First Montana Bank Inc.':'firstmontanabank.com','O.K.I Furniture Fair LLC':'furniturefair.net',
+'Codex Labs Corporation':'codexlabs.co','Big R Holdings Inc':'bigr.com','Artisan Home Loans LLC':'artisanhomeloans.com',
+'Ezee Fiber Texas LLC':'ezeefiber.com','LinkSoul Inc.':'linksoul.com','Audo North America Inc':'audo.com',
+'Lowe\'s':'lowes.com','PNC Bank':'pnc.com','Bosch Tools':'boschtools.com','Corebridge':'corebridge.com',
+'VeraBank (Dremel/Bosch)':'dremel.com','SoFi (Lending/Investment DM)':'sofi.com','SoFi (Current)':'sofi.com',
+'First Savings Financial':'firstsavings.com','Surf Dating':'surf.com'
+};
+function logoUrl(name){const d=LOGO_DOMAINS[name];if(!d)return '';return 'https://logo.uplead.com/'+d;}
+
+// ===== LINKEDIN LINKS =====
+const LINKEDIN={
+'Canvas Credit Union':'canvas-credit-union','Carparts.com Inc':'carpartscom','Liberty Debt Relief LLC':'liberty-debt-relief',
+'Mattress Firm Inc.':'mattress-firm','Prudent FS Inc':'prudent-financial-solutions','Savannah Bee Company Inc.':'savannah-bee-company',
+'SoFi Lending Corp.':'sofi','The Chair King Inc':'the-chair-king','The PNC Financial Services Group Inc':'pnc-financial-services-group',
+'Verizon Wireless Inc.':'verizon','Affirm Inc.':'affirm','Allo Communications LLC':'aboradband',
+'American Furniture Warehouse Co Inc':'american-furniture-warehouse','Artisan Home Loans LLC':'artisan-home-loans',
+'Atlassian Corporation':'atlassian','Audo North America Inc':'aaborado','Authority Brands LLC':'authority-brands',
+'Battlbox LLC':'battlbox','Big R Holdings Inc':'big-r-stores','Blue Dot Tours LLC':'blue-dot-tours',
+'Brakes Plus Inc':'brakes-plus','Buddy\'s Newco LLC':'buddys-home-furnishings','CHOMPS':'chomps',
+'Codex Labs Corporation':'codex-labs','Country Mutual Insurance Co Inc.':'country-financial',
+'Credit Associates LLC':'credit-associates','CrossCountry Mortgage LLC':'crosscountry-mortgage',
+'C Spire Advanced Data Solutions LLC':'c-spire','Davita Inc.':'davita','Deckers Outdoor Corporation':'deckers-brands',
+'Eargo Inc.':'eargo','Empower Annuity Insurance Company of America':'emaboradower',
+'Exclusive Resorts LLC':'exclusive-resorts','Expedia Group Inc.':'expedia-group',
+'Ezee Fiber Texas LLC':'ezee-fiber','First Montana Bank Inc.':'first-montana-bank',
+'First Savings Financial Group Inc.':'first-savings-financial-group',
+'General Motors Financial Company Inc.':'gm-financial','Global Federal Credit Union':'global-federal-credit-union',
+'GoPro Inc.':'gopro','Greenlight Networks LLC':'greenlight-networks','Guiry\'s Inc':'guirys',
+'iMerge LLC':'imerge-advisors','Import Packaging JV LLP':'import-packaging',
+'Inspirato LLC':'inspirato','Janus Henderson Investors':'janus-henderson-investors',
+'John M. Floyd and Associates Inc.':'jmfa','Keen Inc':'keen-inc','Koia':'drinkkoia',
+'Kruszyna Baugher Partners LLC':'kruszyna-baugher-partners','Lancer Skincare LLC':'lancer-skincare',
+'Legacy Restoration LLC':'legacy-restoration','LendingPoint LLC':'lendingpoint',
+'LinkSoul Inc.':'linksoul','Lively Inc.':'livelyme','LXE Hearing':'lxe-hearing',
+'Mainscape Inc.':'mainscape','Marketing Mail Management Solutions':'marketing-mail-management-solutions',
+'Massey Services Inc':'massey-services','NBH Bank':'nbh-bank',
+'O.K.I Furniture Fair LLC':'furniture-fair','Osaic Inc':'osaic',
+'Patriot Mobile LLC':'patriot-mobile','Publicis USA Production Solutions Inc':'publicis-groupe',
+'PureTalk Holdings Inc':'puretalk','Radisys Corporation':'radisys',
+'Resident Home LLC':'resident-home','Ryan Lawn & Tree Inc.':'ryan-lawn-tree',
+'Sail Internet Inc.':'sail-internet','Sonic Telecom LLC':'sonic',
+'SpecSeats Intl Corp.':'specseats','Surf Inc.':'surfinternet',
+'Tachus LLC':'tachus','The Tile Shop Inc':'the-tile-shop',
+'Three Day Rule Inc.':'three-day-rule','Thule Inc.':'thaborade-group',
+'Ting Fiber LLC':'ting-internet','Transamerica':'transamerica',
+'Travis Credit Union':'travis-credit-union','TVG Production Corporation':'tvg-production',
+'United Financial Network Inc':'united-financial-network','VeraBank Inc.':'verabank',
+'Visit Truckee':'visit-truckee','VyStar Credit Union':'vystar-credit-union',
+'Vyve Broadband Investments LLC':'vyve-broadband','Wealth Enhancement Group LLC':'wealth-enhancement-group',
+'Xcel Energy Inc':'xcel-energy'
+};
+function linkedinUrl(name){const slug=LINKEDIN[name];return slug?'https://www.linkedin.com/company/'+slug:'';};
+
+// ===== NOTES & EDITS SYSTEM (localStorage) =====
+const NOTES_KEY='quad_account_notes';
+const EDITS_KEY='quad_account_edits';
+function getNotes(){try{return JSON.parse(localStorage.getItem(NOTES_KEY))||{};}catch(e){return{};}}
+function saveNotes(n){localStorage.setItem(NOTES_KEY,JSON.stringify(n));}
+function getAccountNotes(name){return(getNotes()[name]||[]).sort((a,b)=>b.ts-a.ts);}
+function hasNotes(name){const n=getNotes()[name];return n&&n.length>0;}
+function getEdits(){try{return JSON.parse(localStorage.getItem(EDITS_KEY))||{};}catch(e){return{};}}
+function saveEdits(e){localStorage.setItem(EDITS_KEY,JSON.stringify(e));}
+function getAccountEdits(name){return getEdits()[name]||{};}
+function hasEdits(name){const e=getEdits()[name];return e&&Object.keys(e).length>0;}
+function saveField(name,field,value){const all=getEdits();if(!all[name])all[name]={};all[name][field]=value;all[name]._updated=Date.now();saveEdits(all);flashSaved();}
+function getField(acct,field){const ed=getAccountEdits(acct.name);return ed[field]!==undefined?ed[field]:acct[field];}
+function flashSaved(){const el=document.getElementById('saveIndicator');el.style.opacity='1';clearTimeout(el._t);el._t=setTimeout(()=>{el.style.opacity='0';},1500);}
+function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+// Short helpers that use currentModalAccount so we don't embed names in HTML attributes
+function sf(field,value){if(currentModalAccount)saveField(currentModalAccount,field,value);}
+function sfp(field,value){if(currentModalPipe)saveField('_pipe_'+currentModalPipe,field,value);}
+
+let currentModalAccount=null;
+let currentModalPipe=null;
+
+function openAcctModal(name){
+  const a=ACCOUNTS.find(x=>x.name===name);if(!a)return;
+  currentModalAccount=name;
+  const ed=getAccountEdits(name);
+  const g=(f)=>ed[f]!==undefined?ed[f]:a[f];
+  const logo=logoUrl(name);
+  document.getElementById('modalLogo').src=logo;
+  document.getElementById('modalLogo').style.display=logo?'block':'none';
+  document.getElementById('modalName').textContent=a.name;
+  const li=linkedinUrl(name);
+  document.getElementById('modalSubtitle').innerHTML=`${g('city')}${g('state')?', '+g('state'):''} · ${g('industry')} · ${statusBadge(g('status'))}${li?' · <a href="'+li+'" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none;font-size:12px">🔗 LinkedIn ↗</a>':''}`;
+
+  // Check pipeline
+  const pipe=TOP_OPPS.find(p=>a.name.toLowerCase().includes(p.name.toLowerCase().split(' ')[0])||p.name.toLowerCase().includes(a.name.toLowerCase().split(' ')[0]));
+  currentModalPipe=pipe?pipe.name:null;
+  const pipeEdits=pipe?getAccountEdits('_pipe_'+pipe.name):{};
+  const pg=(f,def)=>pipeEdits[f]!==undefined?pipeEdits[f]:def;
+
+  // Build editable body
+  let html='';
+
+  // === ACCOUNT INFO ===
+  html+=`<div class="acct-section"><div class="acct-section-title">Account Info</div>`;
+  html+=`<div class="field-row">`;
+  html+=`<div class="field-group"><div class="label">Status</div><select class="edit-select" onchange="sf('status',this.value)">
+    <option value="Client" ${g('status')==='Client'?'selected':''}>🟢 Active Client</option>
+    <option value="Potential Client" ${g('status')==='Potential Client'?'selected':''}>🔵 Prospect</option>
+    <option value="Past Client" ${g('status')==='Past Client'?'selected':''}>🟡 Win-back</option>
+  </select></div>`;
+  html+=`<div class="field-group"><div class="label">Priority</div><select class="edit-select" onchange="sf('priority',+this.value)">
+    ${[5,4,3,2,1].map(n=>`<option value="${n}" ${g('priority')===n?'selected':''}>${'★'.repeat(n)}${'☆'.repeat(5-n)} (${n})</option>`).join('')}
+  </select></div>`;
+  html+=`</div>`;
+  html+=`<div class="field-row">`;
+  html+=`<div class="field-group"><div class="label">Est. Revenue</div><input class="edit-field sm" value="${escHtml(g('revenue'))}" onchange="sf('revenue',this.value)"></div>`;
+  html+=`<div class="field-group"><div class="label">Employees</div><input class="edit-field sm" value="${escHtml(g('employees'))}" onchange="sf('employees',this.value)"></div>`;
+  html+=`</div>`;
+  html+=`<div class="field-row">`;
+  html+=`<div class="field-group"><div class="label">Industry</div><input class="edit-field sm" value="${escHtml(g('industry'))}" onchange="sf('industry',this.value)"></div>`;
+  html+=`<div class="field-group"><div class="label">City / State</div><div style="display:flex;gap:6px"><input class="edit-field sm" style="flex:2" value="${escHtml(g('city'))}" onchange="sf('city',this.value)" placeholder="City"><input class="edit-field sm" style="flex:1" value="${escHtml(g('state'))}" onchange="sf('state',this.value)" placeholder="ST"></div></div>`;
+  html+=`</div>`;
+  html+=`<div class="field-row">`;
+  html+=`<div class="field-group"><div class="label">DM Likelihood</div><select class="edit-select" onchange="sf('dmLevel',this.value)">
+    <option value="likely" ${g('dmLevel')==='likely'?'selected':''}>🟢 Highly Likely</option>
+    <option value="possible" ${g('dmLevel')==='possible'?'selected':''}>🟡 Possible</option>
+    <option value="unlikely" ${g('dmLevel')==='unlikely'?'selected':''}>🔴 Unlikely</option>
+  </select></div>`;
+  html+=`<div class="field-group"><div class="label">Recommended Product</div><input class="edit-field sm" value="${escHtml(g('product'))}" onchange="sf('product',this.value)"></div>`;
+  html+=`</div>`;
+  html+=`<div class="field-row">`;
+  html+=`<div class="field-group"><div class="label">Case Study</div><input class="edit-field sm" value="${escHtml(g('caseStudy'))}" onchange="sf('caseStudy',this.value)"></div>`;
+  html+=`<div class="field-group"><div class="label">Contact Name</div><input class="edit-field sm" value="${escHtml(ed.contactName||'')}" onchange="sf('contactName',this.value)" placeholder="Add contact name..."></div>`;
+  html+=`</div>`;
+  html+=`<div class="field-row">`;
+  html+=`<div class="field-group"><div class="label">Contact Email</div><input class="edit-field sm" value="${escHtml(ed.contactEmail||'')}" onchange="sf('contactEmail',this.value)" placeholder="email@company.com"></div>`;
+  html+=`<div class="field-group"><div class="label">Contact Title</div><input class="edit-field sm" value="${escHtml(ed.contactTitle||'')}" onchange="sf('contactTitle',this.value)" placeholder="VP Marketing, CMO, etc."></div>`;
+  html+=`</div>`;
+  html+=`<div class="field-row">`;
+  const currentLi=ed.linkedin||linkedinUrl(name)||'';
+  html+=`<div class="field-group"><div class="label">🔗 LinkedIn Company Page</div><div style="display:flex;gap:6px"><input class="edit-field sm" style="flex:1" value="${escHtml(currentLi)}" onchange="sf('linkedin',this.value)" placeholder="https://linkedin.com/company/...">${currentLi?'<a href="'+(currentLi.startsWith('http')?currentLi:'https://'+currentLi)+'" target="_blank" rel="noopener" style="display:flex;align-items:center;padding:6px 10px;background:rgba(0,174,239,.1);border:1px solid rgba(0,174,239,.2);border-radius:8px;color:var(--cyan);font-size:11px;text-decoration:none;white-space:nowrap;font-weight:600">Open ↗</a>':''}</div></div>`;
+  html+=`<div class="field-group"><div class="label">🔗 Company Website</div><div style="display:flex;gap:6px"><input class="edit-field sm" style="flex:1" value="${escHtml(ed.website||LOGO_DOMAINS[name]||'')}" onchange="sf('website',this.value)" placeholder="company.com">${(ed.website||LOGO_DOMAINS[name])?'<a href="https://'+(ed.website||LOGO_DOMAINS[name])+'" target="_blank" rel="noopener" style="display:flex;align-items:center;padding:6px 10px;background:rgba(0,174,239,.1);border:1px solid rgba(0,174,239,.2);border-radius:8px;color:var(--cyan);font-size:11px;text-decoration:none;white-space:nowrap;font-weight:600">Open ↗</a>':''}</div></div>`;
+  html+=`</div>`;
+  html+=`</div>`;
+
+  // === DESCRIPTION ===
+  html+=`<hr class="section-divider">`;
+  html+=`<div class="acct-section"><div class="acct-section-title">Description</div>`;
+  html+=`<textarea class="edit-textarea" onchange="sf('description',this.value)">${escHtml(g('description'))}</textarea>`;
+  html+=`</div>`;
+
+  // === STRATEGY ===
+  html+=`<div class="acct-section"><div class="acct-section-title">Quad Strategy / Why Quad</div>`;
+  html+=`<textarea class="edit-textarea" onchange="sf('quadFit',this.value)">${escHtml(g('quadFit'))}</textarea>`;
+  html+=`</div>`;
+
+  // === CUSTOM FIELDS ===
+  html+=`<div class="acct-section"><div class="acct-section-title">My Tracking</div>`;
+  html+=`<div class="field-row">`;
+  html+=`<div class="field-group"><div class="label">Deal Stage</div><select class="edit-select" onchange="sf('dealStage',this.value)">
+    ${['—','Researching','Initial Outreach','Meeting Scheduled','Proposal Sent','Negotiating','Closed Won','Closed Lost','On Hold'].map(s=>`<option value="${s}" ${(ed.dealStage||'—')===s?'selected':''}>${s}</option>`).join('')}
+  </select></div>`;
+  html+=`<div class="field-group"><div class="label">Next Action</div><input class="edit-field sm" value="${escHtml(ed.nextAction||'')}" onchange="sf('nextAction',this.value)" placeholder="What's the next step?"></div>`;
+  html+=`</div>`;
+  html+=`<div class="field-row">`;
+  html+=`<div class="field-group"><div class="label">Timeline</div><input class="edit-field sm" value="${escHtml(ed.timeline||'')}" onchange="sf('timeline',this.value)" placeholder="e.g. Q2 2026, EOW 2/21"></div>`;
+  html+=`<div class="field-group"><div class="label">Estimated Deal Value</div><input class="edit-field sm" value="${escHtml(ed.dealValue||'')}" onchange="sf('dealValue',this.value)" placeholder="$"></div>`;
+  html+=`</div>`;
+  html+=`<div class="field-row full">`;
+  html+=`<div class="field-group"><div class="label">Status Update</div><textarea class="edit-textarea" style="min-height:50px" onchange="sf('statusUpdate',this.value)" placeholder="Latest status...">${escHtml(ed.statusUpdate||'')}</textarea></div>`;
+  html+=`</div>`;
+  html+=`</div>`;
+
+  // === PIPELINE (if exists) ===
+  if(pipe){
+    html+=`<hr class="section-divider">`;
+    html+=`<div class="acct-section"><div class="acct-section-title">🔥 Pipeline Deal — ${escHtml(pipe.name)}</div>`;
+    html+=`<div class="field-row">`;
+    html+=`<div class="field-group"><div class="label">Revenue</div><input class="edit-field sm" value="${escHtml(pg('rev',pipe.rev))}" onchange="sfp('rev',this.value)"></div>`;
+    html+=`<div class="field-group"><div class="label">Reach</div><input class="edit-field sm" value="${escHtml(pg('reach',pipe.reach))}" onchange="sfp('reach',this.value)"></div>`;
+    html+=`</div>`;
+    html+=`<div class="field-row">`;
+    html+=`<div class="field-group"><div class="label">Urgency</div><select class="edit-select" onchange="sfp('urgLabel',this.value)">
+      ${['NOW','ACTIVE','RESET','RE-ENGAGE'].map(u=>`<option value="${u}" ${pg('urgLabel',pipe.urgLabel)===u?'selected':''}>${u}</option>`).join('')}
+    </select></div>`;
+    html+=`<div class="field-group"><div class="label">Timeline</div><input class="edit-field sm" value="${escHtml(pg('timeline',pipe.timeline))}" onchange="sfp('timeline',this.value)"></div>`;
+    html+=`</div>`;
+    html+=`<div class="field-row full">`;
+    html+=`<div class="field-group"><div class="label">Status</div><textarea class="edit-textarea" style="min-height:50px" onchange="sfp('status',this.value)">${escHtml(pg('status',pipe.status))}</textarea></div>`;
+    html+=`</div>`;
+    html+=`<div class="field-row full">`;
+    html+=`<div class="field-group"><div class="label">Next Action</div><textarea class="edit-textarea" style="min-height:50px" onchange="sfp('action',this.value)">${escHtml(pg('action',pipe.action))}</textarea></div>`;
+    html+=`</div>`;
+    html+=`<div class="field-row">`;
+    html+=`<div class="field-group"><div class="label">Growth Targets</div><input class="edit-field sm" value="${escHtml(pg('growth',pipe.growth))}" onchange="sfp('growth',this.value)"></div>`;
+    html+=`<div class="field-group"></div>`;
+    html+=`</div>`;
+    html+=`</div>`;
+  }
+
+  // === NOTES ===
+  html+=`<hr class="section-divider">`;
+  html+=`<div class="acct-section"><div class="acct-section-title">📝 Notes</div>`;
+  html+=`<div id="modalNotes"></div>`;
+  html+=`<div class="add-note-row"><textarea class="notes-area" id="noteInput" placeholder="Add a note..." rows="2" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)){addNote();}"></textarea><button class="add-note-btn" onclick="addNote()">+ Add</button></div>`;
+  html+=`</div>`;
+
+  // Last edited
+  if(ed._updated){
+    const d=new Date(ed._updated);
+    html+=`<div style="text-align:right;font-size:10px;color:var(--text3);margin-top:8px">Last edited: ${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})} ${d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</div>`;
+  }
+
+  document.getElementById('modalBody').innerHTML=html;
+  renderNotesInModal(name);
+  document.getElementById('acctModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+// esc no longer needed - sf()/sfp() use currentModalAccount/currentModalPipe
+
+// ========== MEETING PREP GENERATOR ==========
+const CASE_STUDIES_DB={
+  'Kasasa':{metrics:'+8,000 DM piece run size, weekly from monthly runs, lower postage costs',industry:'Financial Services',angle:'Automated direct mail through Salesforce — triggered, personalized, scalable'},
+  'Avant':{metrics:'Full brand overhaul — identity, website, mobile app, credit card designs, social',industry:'Financial Services',angle:'Complete rebrand by Favorite Child (Quad creative arm) that transformed market perception'},
+  'PEMCO Insurance':{metrics:'3MM social engagements, 2X web traffic, +9% ad recall lift',industry:'Financial Services',angle:'Holistic video-centric campaign by Betty agency across TV, social, and paid media'},
+  'InnovAge':{metrics:'1.1x SQLs, -61% cost-per-SQL, 3.5x conversion rate',industry:'Health/Pharma',angle:'Cross-channel media strategy with deep audience insights and targeted digital campaigns'},
+  'Liberty Debt Relief':{metrics:'$20K+ weekly postage savings, 400K snap paks/week, $1M+ annual savings',industry:'Financial Services',angle:'MergedMail postal optimization at massive scale — co-mailing saved millions'},
+  'At Home':{metrics:'-30% permanent signage cost, 30-100% savings vs incumbents',industry:'Retail',angle:'End-to-end signage strategy, creative, production, and installation across 200 locations'},
+  'Stanley Steemer':{metrics:'541% ROI improvement, 420% monthly revenue increase, -76% cost per job',industry:'Retail/Services',angle:'Hyper-local search strategy by Rise agency with Connex measurement framework'},
+  'DTC Portfolio':{metrics:'49% avg YoY revenue increase, 180+ DTC clients',industry:'E-Commerce/DTC',angle:'Proven results across DTC brands — retail marketing, packaging, and mail'},
+  'Plow & Hearth':{metrics:'-27% creative hours, +3,600 annual web requests capacity',industry:'Retail',angle:'Marketer\'s Studio CMS implementation — print + digital workflow optimization'},
+  "Christie's Intl Real Estate":{metrics:'108 LinkedIn reactions, 21.9K Twitter followers, 8.2K+ YouTube subs, 2nd project won',industry:'Real Estate',angle:'Hollywood-quality brand video from existing footage — zero original shoot budget'},
+  'Mostly Made':{metrics:'+136% YoY sales at Target',industry:'CPG',angle:'Full brand reconceptualization by Favorite Child — strategy, design, packaging, consumer testing'},
+  'Oklahoma Today':{metrics:'+197% new orders, +23% renewals, +71% revenue',industry:'Publishing',angle:'Direct mail-to-digital campaign with deep audience data driving print-to-digital conversion'},
+  'Intuit QuickBooks':{metrics:'122% of impression goal, 25MM impressions, 20K conversions',industry:'Technology',angle:'Emotionally authentic campaign by Betty agency deepening brand-accountant relationship'},
+  'Holy City Brewing':{metrics:'+34% barrel production, +10% off-premises sales',industry:'CPG',angle:'Package redesign using recyclable paperboard — standout shelf presence driving retail growth'},
+  'American Lung Association':{metrics:'+84% organic traffic, 20s faster mobile, +273% more conversions',industry:'Health/Nonprofit',angle:'Brand-centered web redesign by Rise with accessibility-first design and SEO migration'}
+};
+
+const OBJECTIONS_DB=[
+  {obj:'"We already have a vendor"',rebuttal:'Great — that means you already believe in direct mail. The question is: are you getting household-level targeting from 3B+ data points? Testing 6x faster? Saving maximum postage with co-mailing across 8B pieces/year? Most vendors print and mail. Quad does intelligence → creative → production → media → measurement.'},
+  {obj:'"Direct mail doesn\'t work for us"',rebuttal:'Have you tested it with proper audience data? Most failures come from bad targeting, not bad channel. Quad\'s AMI platform tests audiences and offers 6x faster than traditional methods. We can prove ROI before you commit to a full campaign.'},
+  {obj:'"We\'re focused on digital"',rebuttal:'So are we — Rise, our digital agency, runs programmatic, paid search, social, and retail media. The magic is when you combine digital + mail. Connex measurement proves the lift. Brands that add mail to digital see 28% higher conversion rates.'},
+  {obj:'"Budget is tight"',rebuttal:'MergedMail postal optimization saves clients millions in postage by co-mailing across our entire 8B piece volume pool. Liberty Debt Relief saves $20K/week in postage alone. The ROI math often means mail SAVES money vs. other channels.'},
+  {obj:'"We need to think about it"',rebuttal:'Totally understand. What if we ran a no-commitment data analysis on your current customer file? We can show you the opportunity size before you spend a dollar. Zero risk, full transparency.'},
+  {obj:'"We tried Quad before"',rebuttal:'Fair — and I appreciate the honesty. What specifically didn\'t work? Quad has transformed since then: new MX model, new technology platform, new agency capabilities. I\'d love to show you what\'s different.'}
+];
+
+const MAIL_FORMATS_BY_INDUSTRY={
+  'Financial Services':['Snap Pack — highest open rates for pre-approved offers','Self-Mailer — cost-effective for acquisition campaigns','Bifold — professional feel for wealth management','Letter Package — trust-building for insurance/lending'],
+  'Retail':['Circular — weekly promo staple for driving store traffic','Postcard — fast, cost-effective for sales and events','Catalog — showcase full product range','In-Store Signage — bridge mail to physical retail'],
+  'CPG':['Package Design — shelf presence that sells','Postcard — sampling and coupon distribution','Cross-Mailer — creative format that stands out','Self-Mailer — product launches and seasonal promos'],
+  'Healthcare':['Letter Package — trust and compliance for patient comms','Bifold — educational health content','Self-Mailer — Medicare and enrollment campaigns','Snap Pack — appointment reminders and benefits'],
+  'Technology':['Letter Package — ABM campaigns to enterprise buyers','Postcard — event and webinar invitations','Dimensional Mailer — executive-level attention grabbers','Self-Mailer — product launch announcements'],
+  'Telecom':['Self-Mailer — subscriber acquisition in new markets','Snap Pack — plan upgrade offers','Postcard — new service area announcements','Letter Package — business/enterprise sales'],
+  'default':['Self-Mailer — versatile, cost-effective, strong open rates','Postcard — fastest and cheapest to market','Snap Pack — highest engagement for offers','Bifold — professional with room for detail']
+};
+
+function getIndustryBucket(ind){
+  if(!ind) return 'default';
+  const i=ind.toLowerCase();
+  if(i.includes('financial')||i.includes('bank')||i.includes('credit')||i.includes('insurance')||i.includes('mortgage')||i.includes('debt')||i.includes('fintech'))return 'Financial Services';
+  if(i.includes('retail')||i.includes('furniture')||i.includes('home'))return 'Retail';
+  if(i.includes('cpg')||i.includes('food')||i.includes('beverage')||i.includes('beauty')||i.includes('skincare'))return 'CPG';
+  if(i.includes('health')||i.includes('pharma')||i.includes('medical'))return 'Healthcare';
+  if(i.includes('tech')||i.includes('saas')||i.includes('software'))return 'Technology';
+  if(i.includes('telecom')||i.includes('isp')||i.includes('wireless')||i.includes('fiber'))return 'Telecom';
+  return 'default';
+}
+
+function generateMeetingPrep(){
+  if(!currentModalAccount)return;
+  const a=ACCOUNTS.find(x=>x.name===currentModalAccount);if(!a)return;
+  const ed=getAccountEdits(a.name);
+  const g=(f)=>ed[f]!==undefined?ed[f]:a[f];
+  const pipe=TOP_OPPS.find(p=>a.name.toLowerCase().includes(p.name.toLowerCase().split(' ')[0])||p.name.toLowerCase().includes(a.name.toLowerCase().split(' ')[0]));
+
+  // Case study match
+  const csName=g('caseStudy')||'Stanley Steemer';
+  const cs=CASE_STUDIES_DB[csName]||CASE_STUDIES_DB['Stanley Steemer'];
+
+  // Industry bucket for mail formats
+  const indBucket=getIndustryBucket(g('industry'));
+  const mailFormats=MAIL_FORMATS_BY_INDUSTRY[indBucket]||MAIL_FORMATS_BY_INDUSTRY['default'];
+
+  // Pick 3 relevant objections
+  const objs=OBJECTIONS_DB.slice(0,3);
+
+  // Contact info
+  const contact=ed.contactName||'[Add contact name in account modal]';
+  const contactTitle=ed.contactTitle||'[Add contact title in account modal]';
+
+  // Date
+  const today=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+  let html='';
+
+  // 1. OVERVIEW
+  html+=`<div class="prep-section">
+    <div class="prep-section-title">Company Overview</div>
+    <div class="prep-item">
+      <strong style="font-size:1rem">${escHtml(a.name)}</strong><br>
+      <span style="color:var(--text2)">${escHtml(g('city'))}${g('state')?', '+escHtml(g('state')):''} · ${escHtml(g('industry'))}</span><br><br>
+      ${escHtml(g('description'))}<br><br>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
+        <span><strong>Est. Revenue:</strong> ${escHtml(g('revenue')||'—')}</span>
+        <span><strong>Employees:</strong> ${escHtml(g('employees')||'—')}</span>
+        <span><strong>DM Likelihood:</strong> ${g('dmLevel')==='likely'?'🟢 Highly Likely':g('dmLevel')==='possible'?'🟡 Possible':'🔴 Unlikely'}</span>
+      </div>
+    </div>
+  </div>`;
+
+  // 2. CONTACT
+  html+=`<div class="prep-section">
+    <div class="prep-section-title">Meeting Contact</div>
+    <div class="prep-item">
+      <strong>${escHtml(contact)}</strong> — ${escHtml(contactTitle)}<br>
+      ${ed.contactEmail?'✉️ '+escHtml(ed.contactEmail)+'<br>':''}
+      ${ed.linkedin||linkedinUrl(a.name)?'🔗 <a href="'+(ed.linkedin||linkedinUrl(a.name))+'" target="_blank" style="color:var(--cyan)">LinkedIn Profile</a>':''}
+    </div>
+  </div>`;
+
+  // 3. WHY QUAD / STRATEGY
+  html+=`<div class="prep-section">
+    <div class="prep-section-title">Why Quad for ${escHtml(a.name)}</div>
+    <div class="prep-item prep-highlight">${escHtml(g('quadFit'))}</div>
+    <div class="prep-item"><div class="label">Recommended Product</div>${escHtml(g('product')||'Full MX Suite')}</div>
+  </div>`;
+
+  // 4. PIPELINE (if exists)
+  if(pipe){
+    const pe=getAccountEdits('_pipe_'+pipe.name);
+    const pg2=(f,def)=>pe[f]!==undefined?pe[f]:def;
+    html+=`<div class="prep-section">
+      <div class="prep-section-title">🔥 Pipeline Intel</div>
+      <div class="prep-item">
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px">
+          <span><strong>Revenue:</strong> ${escHtml(pg2('rev',pipe.rev))}</span>
+          <span><strong>Reach:</strong> ${escHtml(pg2('reach',pipe.reach))}</span>
+          <span><strong>Urgency:</strong> <span style="color:var(--yellow);font-weight:700">${escHtml(pg2('urgLabel',pipe.urgLabel))}</span></span>
+        </div>
+        <div class="label">Current Status</div>${escHtml(pg2('status',pipe.status))}<br><br>
+        <div class="label">Next Action</div><strong style="color:var(--cyan)">${escHtml(pg2('action',pipe.action))}</strong>
+      </div>
+    </div>`;
+  }
+
+  // 5. MATCHED CASE STUDY
+  html+=`<div class="prep-section">
+    <div class="prep-section-title">📊 Lead Case Study — ${escHtml(csName)}</div>
+    <div class="prep-item">
+      <div class="label">Results</div><strong style="color:var(--green)">${cs.metrics}</strong><br><br>
+      <div class="label">Angle for This Meeting</div>${cs.angle}<br><br>
+      <div class="label">Talk Track</div>
+      <em>"${escHtml(a.name)} reminds me of what we did for ${escHtml(csName)}. They were in a similar situation — ${cs.industry} company looking to drive measurable results. We delivered ${cs.metrics}. The same approach would work for your team because ${escHtml(g('quadFit').split('.')[0])}."</em>
+    </div>
+  </div>`;
+
+  // 6. RECOMMENDED MAIL FORMATS
+  html+=`<div class="prep-section">
+    <div class="prep-section-title">📬 Recommended Mail Formats</div>
+    ${mailFormats.map(f=>'<div class="prep-item">'+f+'</div>').join('')}
+  </div>`;
+
+  // 7. PREDICTED OBJECTIONS
+  html+=`<div class="prep-section">
+    <div class="prep-section-title">🛡️ Predicted Objections & Rebuttals</div>
+    ${objs.map(o=>'<div class="prep-item"><div class="label">If they say: '+o.obj+'</div>'+o.rebuttal+'</div>').join('')}
+  </div>`;
+
+  // 8. SUGGESTED AGENDA
+  html+=`<div class="prep-section">
+    <div class="prep-section-title">📋 Suggested Meeting Agenda (30 min)</div>
+    <div class="prep-item">
+      <strong>1. Intro & Rapport</strong> (3 min)<br>
+      Quick personal connection. Reference something specific about their company or recent news.<br><br>
+      <strong>2. Discovery</strong> (7 min)<br>
+      "What does your current direct mail / marketing mix look like?"<br>
+      "What's working well? What frustrates you about your current vendor?"<br>
+      "What are your top growth priorities for the next 6-12 months?"<br><br>
+      <strong>3. Quad Overview — Tailored</strong> (8 min)<br>
+      Lead with the ${escHtml(indBucket)} angle. Show the ${escHtml(csName)} case study. Highlight: ${escHtml(g('product')||'full MX suite')}.<br><br>
+      <strong>4. ROI Proof</strong> (5 min)<br>
+      Walk through the numbers: ${cs.metrics}.<br>
+      "If we could deliver even half of these results for ${escHtml(a.name)}, what would that mean for your business?"<br><br>
+      <strong>5. Next Steps</strong> (5 min)<br>
+      Propose a free data analysis on their customer file. Set follow-up date. Ask: "Who else on your team should be part of the next conversation?"<br><br>
+      <strong>6. Leave-Behind</strong> (2 min)<br>
+      Physical mail samples from Gallery. One-page ROI summary. Your card with a personalized note.
+    </div>
+  </div>`;
+
+  // 9. NOTES (if any)
+  const notes=JSON.parse(localStorage.getItem('quad_account_notes')||'{}')[a.name];
+  if(notes&&notes.length){
+    html+=`<div class="prep-section">
+      <div class="prep-section-title">📝 Your Notes on This Account</div>
+      ${notes.map(n=>'<div class="prep-item"><span style="color:var(--text3);font-size:.65rem">'+new Date(n.ts).toLocaleDateString()+'</span><br>'+escHtml(n.text)+'</div>').join('')}
+    </div>`;
+  }
+
+  // Footer
+  html+=`<div style="text-align:center;padding:16px 0;font-size:.65rem;color:var(--text3);border-top:1px solid var(--border);margin-top:16px">
+    Meeting Prep for <strong>${escHtml(a.name)}</strong> · Generated ${today} · Quad Sales HQ
+  </div>`;
+
+  document.getElementById('prepTitle').textContent='Meeting Prep — '+a.name;
+  document.getElementById('prepSubtitle').textContent=today+' · Quad Sales HQ';
+  document.getElementById('prepBody').innerHTML=html;
+  document.getElementById('prepOverlay').classList.add('open');
+}
+
+function closePrepOverlay(){
+  document.getElementById('prepOverlay').classList.remove('open');
+}
+
+function copyPrep(){
+  const body=document.getElementById('prepBody');
+  const text=body.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.prep-actions button');
+    const orig=btn.innerHTML;
+    btn.innerHTML='✅ Copied!';
+    setTimeout(()=>btn.innerHTML=orig,2000);
+  });
+}
+
+function closeAcctModal(){
+  document.getElementById('acctModal').classList.remove('open');
+  document.body.style.overflow='';
+  currentModalAccount=null;
+  renderAccounts();
+}
+
+function renderNotesInModal(name){
+  const notes=getAccountNotes(name);
+  const container=document.getElementById('modalNotes');
+  if(!container)return;
+  if(notes.length===0){
+    container.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0">No notes yet. Add your first note below (Ctrl+Enter to save).</div>';
+    return;
+  }
+  container.innerHTML=notes.map((n,i)=>{
+    const d=new Date(n.ts);
+    const dateStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    return `<div class="note-entry"><button class="note-del" data-name="${name.replace(/"/g,'&quot;')}" data-idx="${i}" onclick="deleteNote(this.dataset.name,+this.dataset.idx)">✕</button><div class="note-date">${dateStr}</div><div class="note-text">${escHtml(n.text)}</div></div>`;
+  }).join('');
+}
+
+function addNote(){
+  const input=document.getElementById('noteInput');
+  const text=input.value.trim();
+  if(!text||!currentModalAccount)return;
+  const allNotes=getNotes();
+  if(!allNotes[currentModalAccount])allNotes[currentModalAccount]=[];
+  allNotes[currentModalAccount].push({text,ts:Date.now()});
+  saveNotes(allNotes);
+  input.value='';
+  renderNotesInModal(currentModalAccount);
+  flashSaved();
+}
+
+function deleteNote(name,idx){
+  const allNotes=getNotes();
+  const notes=(allNotes[name]||[]).sort((a,b)=>b.ts-a.ts);
+  notes.splice(idx,1);
+  allNotes[name]=notes;
+  saveNotes(allNotes);
+  renderNotesInModal(name);
+}
+const ACCOUNTS = [
+{name:"Canvas Credit Union",status:"Client",city:"Denver",state:"CO",ttmGross:2000,ttmMfg:2000,description:"Colorado-based credit union serving 370K+ members with banking, lending, and financial services.",industry:"Financial Services",revenue:"$500M+ (assets)",employees:"~900",directMail:"likely",dmLevel:"likely",quadFit:"Credit unions heavily rely on direct mail for member acquisition, cross-sell campaigns, and statement inserts. Canvas CU's regional focus makes them ideal for targeted geographic mailings.",product:"At-Home Connect",caseStudy:"Kasasa",priority:3},
+{name:"Carparts.com Inc",status:"Client",city:"Torrance",state:"CA",ttmGross:0,ttmMfg:0,description:"Online retailer of aftermarket auto parts and accessories. Publicly traded e-commerce company (PRTS).",industry:"E-Commerce / Automotive",revenue:"~$600M",employees:"~700",directMail:"possible",dmLevel:"possible",quadFit:"As a DTC e-commerce brand, CarParts.com can leverage direct mail for customer reactivation, catalog mailings, and retargeting lapsed buyers with personalized offers.",product:"MergedMail",caseStudy:"DTC Portfolio",priority:4},
+{name:"Liberty Debt Relief LLC",status:"Client",city:"Orange",state:"CA",ttmGross:3500,ttmMfg:2927,description:"Debt settlement company helping consumers resolve unsecured debts through negotiated settlements.",industry:"Financial Services",revenue:"~$200M",employees:"~500",directMail:"likely",dmLevel:"likely",quadFit:"Debt relief companies are among the heaviest direct mail users for lead generation. Pre-screened mail campaigns targeting consumers with high debt loads are their primary acquisition channel.",product:"MergedMail",caseStudy:"Liberty Debt Relief",priority:3},
+{name:"Mattress Firm Inc.",status:"Potential Client",city:"Houston",state:"TX",ttmGross:0,ttmMfg:0,description:"Largest specialty mattress retailer in the US with 2,300+ stores nationwide. Recently emerged from restructuring.",industry:"Retail / Furniture",revenue:"~$5B",employees:"~10,000",directMail:"likely",dmLevel:"likely",quadFit:"Major retailer with massive store footprint needing local market direct mail, promotional flyers, and in-store signage. High volume print + mail opportunity across thousands of locations.",product:"In-Store Connect",caseStudy:"At Home",priority:5},
+{name:"Prudent FS Inc",status:"Client",city:"New York City",state:"NY",ttmGross:277,ttmMfg:0,description:"Financial services firm providing lending and financial planning solutions.",industry:"Financial Services",revenue:"~$50M",employees:"~100",directMail:"possible",dmLevel:"possible",quadFit:"Financial services firms use direct mail for client acquisition and regulatory communications. Opportunity to grow existing small account with targeted campaigns.",product:"MergedMail",caseStudy:"PEMCO Insurance",priority:2},
+{name:"Savannah Bee Company Inc.",status:"Potential Client",city:"Savannah",state:"GA",ttmGross:0,ttmMfg:0,description:"Premium artisanal honey and bee-inspired skincare/wellness brand with retail stores and e-commerce.",industry:"CPG / Specialty Food",revenue:"~$20M",employees:"~100",directMail:"possible",dmLevel:"possible",quadFit:"Premium DTC brand that could leverage beautiful catalog mailings and seasonal promotional pieces to drive e-commerce and retail traffic. Strong brand aesthetic suits high-end print.",product:"Creative/Betty",caseStudy:"Mostly Made",priority:3},
+{name:"SoFi Lending Corp.",status:"Potential Client",city:"San Francisco",state:"CA",ttmGross:0,ttmMfg:0,description:"Major fintech company offering student loan refinancing, personal loans, mortgages, investing, and banking. Publicly traded (SOFI).",industry:"Financial Services / Fintech",revenue:"~$2B",employees:"~4,500",directMail:"likely",dmLevel:"likely",quadFit:"SoFi is a massive fintech that uses direct mail heavily for loan offers, credit card acquisition, and cross-selling financial products to their member base. Huge volume potential.",product:"MergedMail",caseStudy:"Avant",priority:5},
+{name:"The Chair King Inc",status:"Potential Client",city:"Houston",state:"TX",ttmGross:0,ttmMfg:0,description:"Houston-area patio furniture and outdoor living retailer with multiple showroom locations.",industry:"Retail / Furniture",revenue:"~$30M",employees:"~100",directMail:"likely",dmLevel:"likely",quadFit:"Regional furniture retailer that likely uses direct mail catalogs and seasonal promotional flyers to drive showroom traffic. Local market targeting opportunity.",product:"At-Home Connect",caseStudy:"Plow & Hearth",priority:3},
+{name:"The PNC Financial Services Group Inc",status:"Potential Client",city:"Pittsburgh",state:"PA",ttmGross:0,ttmMfg:0,description:"One of the largest US banks by assets. Full-service financial institution with banking, lending, wealth management across 27+ states.",industry:"Financial Services / Banking",revenue:"~$22B",employees:"~56,000",directMail:"likely",dmLevel:"likely",quadFit:"Top-10 US bank with enormous direct mail volume for credit card offers, account acquisition, cross-selling, and regulatory mailings. A single relationship here could be a seven-figure account.",product:"MergedMail",caseStudy:"PEMCO Insurance",priority:5},
+{name:"Verizon Wireless Inc.",status:"Past Client",city:"Basking Ridge",state:"NJ",ttmGross:0,ttmMfg:0,description:"Largest US wireless carrier serving 100M+ subscribers. Subsidiary of Verizon Communications.",industry:"Telecom",revenue:"~$78B (parent)",employees:"~105,000",directMail:"likely",dmLevel:"likely",quadFit:"Massive telecom with huge direct mail budgets for subscriber acquisition, plan upgrades, device promotions, and retail store traffic. Win-back opportunity with enormous upside.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:5},
+{name:"Affirm Inc.",status:"Potential Client",city:"San Francisco",state:"CA",ttmGross:0,ttmMfg:0,description:"Buy-now-pay-later fintech company partnering with merchants to offer point-of-sale financing. Publicly traded (AFRM).",industry:"Financial Services / Fintech",revenue:"~$1.8B",employees:"~2,000",directMail:"possible",dmLevel:"possible",quadFit:"Affirm can use direct mail to reach consumers with pre-approved BNPL offers and drive merchant partner awareness. Growing fintech with expanding customer base.",product:"MergedMail",caseStudy:"Avant",priority:4},
+{name:"Allo Communications LLC",status:"Potential Client",city:"Imperial",state:"NE",ttmGross:0,ttmMfg:0,description:"Fiber-optic internet service provider expanding rapidly across Nebraska, Colorado, Arizona and other markets.",industry:"Telecom / ISP",revenue:"~$200M",employees:"~600",directMail:"likely",dmLevel:"likely",quadFit:"Fiber ISPs are among the heaviest direct mail users — they mail aggressively into new service areas to acquire subscribers. Allo's rapid expansion means growing mail volume.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:4},
+{name:"American Furniture Warehouse Co Inc",status:"Potential Client",city:"Englewood",state:"CO",ttmGross:0,ttmMfg:0,description:"Largest furniture retailer in Colorado with massive showrooms. Family-owned regional powerhouse expanding into other states.",industry:"Retail / Furniture",revenue:"~$1.5B",employees:"~3,000",directMail:"likely",dmLevel:"likely",quadFit:"Major regional furniture retailer that relies heavily on promotional flyers, catalogs, and direct mail to drive showroom traffic. High volume print + mail opportunity.",product:"In-Store Connect",caseStudy:"At Home",priority:5},
+{name:"Artisan Home Loans LLC",status:"Potential Client",city:"Denver",state:"CO",ttmGross:0,ttmMfg:0,description:"Colorado-based mortgage lending company offering residential home loans.",industry:"Financial Services / Mortgage",revenue:"~$30M",employees:"~100",directMail:"likely",dmLevel:"likely",quadFit:"Mortgage companies are heavy direct mail users for rate offers, refinance solicitations, and pre-approval campaigns. Highly targeted geographic and demographic data makes mail effective.",product:"MergedMail",caseStudy:"Christie's Intl Real Estate",priority:3},
+{name:"Atlassian Corporation",status:"Potential Client",city:"San Francisco",state:"CA",ttmGross:0,ttmMfg:0,description:"Enterprise software company behind Jira, Confluence, Trello, and Bitbucket. Publicly traded (TEAM).",industry:"Technology / SaaS",revenue:"~$4B",employees:"~12,000",directMail:"unlikely",dmLevel:"unlikely",quadFit:"While Atlassian is digital-first, B2B tech companies increasingly use direct mail for ABM campaigns targeting enterprise decision-makers. Lower volume but high-value pieces.",product:"Creative/Betty",caseStudy:"Intuit QuickBooks",priority:2},
+{name:"Audo North America Inc",status:"Client",city:"Nordhavn",state:"",ttmGross:0,ttmMfg:0,description:"Scandinavian premium design brand (formerly Menu) offering furniture, lighting, and home accessories.",industry:"Retail / Design",revenue:"~$50M",employees:"~150",directMail:"possible",dmLevel:"possible",quadFit:"Premium design brand that could benefit from high-end catalog and lookbook mailings to drive awareness among design professionals and affluent consumers.",product:"Creative/Betty",caseStudy:"Mostly Made",priority:2},
+{name:"Authority Brands LLC",status:"Potential Client",city:"Columbia",state:"MD",ttmGross:0,ttmMfg:0,description:"Home services franchisor operating brands like America's Swimming Pool Co, Benjamin Franklin Plumbing, Mister Sparky, One Hour Heating & Air, and more.",industry:"Home Services / Franchise",revenue:"~$2B (system-wide)",employees:"~1,500 (corporate)",directMail:"likely",dmLevel:"likely",quadFit:"Franchise home services companies use massive direct mail volumes for local market customer acquisition across hundreds of franchise locations. Centralized print buying opportunity.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:5},
+{name:"Battlbox LLC",status:"Past Client",city:"Milledgeville",state:"GA",ttmGross:0,ttmMfg:0,description:"Subscription box company for outdoor and survival gear enthusiasts. Featured on Netflix's 'Southern Survival'.",industry:"E-Commerce / Subscription",revenue:"~$25M",employees:"~30",directMail:"possible",dmLevel:"possible",quadFit:"Subscription box companies use direct mail for subscriber acquisition and win-back campaigns. Battlbox's engaged audience responds well to tactile marketing.",product:"MergedMail",caseStudy:"DTC Portfolio",priority:2},
+{name:"Big R Holdings Inc",status:"Potential Client",city:"Pueblo",state:"CO",ttmGross:0,ttmMfg:0,description:"Regional farm and ranch supply retail chain operating stores across Colorado and surrounding states.",industry:"Retail / Farm & Ranch",revenue:"~$100M",employees:"~300",directMail:"likely",dmLevel:"likely",quadFit:"Rural retail chains rely heavily on direct mail circulars, seasonal catalogs, and promotional mailers to reach customers in areas with less digital penetration.",product:"In-Store Connect",caseStudy:"At Home",priority:3},
+{name:"Blue Dot Tours LLC",status:"Client",city:"Scituate",state:"MA",ttmGross:5573,ttmMfg:3605,description:"Travel and tour company offering curated vacation experiences and guided tours.",industry:"Travel / Tourism",revenue:"~$10M",employees:"~30",directMail:"possible",dmLevel:"possible",quadFit:"Travel companies use direct mail for seasonal brochures and trip promotions targeting affluent demographics. Already a producing client — opportunity to grow.",product:"Creative/Betty",caseStudy:"Oklahoma Today",priority:3},
+{name:"Brakes Plus Inc",status:"Potential Client",city:"Centennial",state:"CO",ttmGross:0,ttmMfg:0,description:"Regional automotive repair chain specializing in brakes, with 60+ locations across Colorado, Texas, and Arizona.",industry:"Automotive Services",revenue:"~$100M",employees:"~500",directMail:"likely",dmLevel:"likely",quadFit:"Auto service chains are steady direct mail users for local coupons, seasonal promotions, and new customer acquisition. Multi-location means scalable campaigns.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:4},
+{name:"Buddy's Newco LLC",status:"Potential Client",city:"Orlando",state:"FL",ttmGross:0,ttmMfg:0,description:"Rent-to-own home furnishing retailer operating Buddy's Home Furnishings franchise locations nationwide.",industry:"Retail / Rent-to-Own",revenue:"~$300M (system)",employees:"~800",directMail:"likely",dmLevel:"likely",quadFit:"Rent-to-own retailers mail heavily to target demographics with promotional offers and new store openings. Franchise model means centralized production opportunity.",product:"At-Home Connect",caseStudy:"At Home",priority:4},
+{name:"CHOMPS",status:"Potential Client",city:"Naples",state:"FL",ttmGross:0,ttmMfg:0,description:"Fast-growing DTC meat snack brand (grass-fed beef sticks and jerky). Expanded to retail at Whole Foods, Target, Costco.",industry:"CPG / Food & Beverage",revenue:"~$150M",employees:"~100",directMail:"possible",dmLevel:"possible",quadFit:"DTC food brand with growing retail presence could use direct mail for sampling promotions, couponing, and driving online subscription signups.",product:"MergedMail",caseStudy:"DTC Portfolio",priority:3},
+{name:"Codex Labs Corporation",status:"Potential Client",city:"San Jose",state:"CA",ttmGross:0,ttmMfg:0,description:"Biotech-driven skincare company developing science-backed products using antioxidant technology.",industry:"Beauty / Skincare",revenue:"~$10M",employees:"~30",directMail:"possible",dmLevel:"possible",quadFit:"Premium skincare brands use direct mail for product sampling, loyalty programs, and high-end brand storytelling that digital can't replicate.",product:"Creative/Betty",caseStudy:"Mostly Made",priority:2},
+{name:"Country Mutual Insurance Co Inc.",status:"Past Client",city:"Bloomington",state:"IL",ttmGross:0,ttmMfg:0,description:"Part of Country Financial group, providing auto, home, life, and business insurance products across multiple states.",industry:"Insurance",revenue:"~$4B (group)",employees:"~3,500",directMail:"likely",dmLevel:"likely",quadFit:"Insurance companies are massive direct mail users for policy acquisition, cross-selling, and renewal campaigns. Win-back opportunity with a proven mail-heavy industry.",product:"MergedMail",caseStudy:"PEMCO Insurance",priority:5},
+{name:"Credit Associates LLC",status:"Potential Client",city:"Dallas",state:"TX",ttmGross:0,ttmMfg:0,description:"Debt settlement and credit repair company helping consumers reduce and resolve outstanding debts.",industry:"Financial Services",revenue:"~$100M",employees:"~300",directMail:"likely",dmLevel:"likely",quadFit:"Debt settlement companies are among the heaviest direct mail users, targeting consumers with specific credit profiles. Data-driven mail is their primary lead gen channel.",product:"MergedMail",caseStudy:"Liberty Debt Relief",priority:4},
+{name:"CrossCountry Mortgage LLC",status:"Potential Client",city:"Brecksville",state:"OH",ttmGross:0,ttmMfg:0,description:"Top-20 US retail mortgage lender with 700+ branches nationwide. Rapidly growing independent lender.",industry:"Financial Services / Mortgage",revenue:"~$1.5B",employees:"~7,000",directMail:"likely",dmLevel:"likely",quadFit:"Major mortgage lender with massive direct mail needs for rate advertisements, refinance offers, and pre-approval campaigns across hundreds of branch markets.",product:"MergedMail",caseStudy:"Christie's Intl Real Estate",priority:5},
+{name:"C Spire Advanced Data Solutions LLC",status:"Potential Client",city:"Ridgeland",state:"MS",ttmGross:0,ttmMfg:0,description:"Mississippi-based telecom providing wireless, fiber internet, and managed IT services across the Southeast.",industry:"Telecom",revenue:"~$1.2B (parent)",employees:"~1,800",directMail:"likely",dmLevel:"likely",quadFit:"Regional telecom expanding fiber coverage needs direct mail for subscriber acquisition in new markets. Telecoms are proven high-volume mailers.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:4},
+{name:"Davita Inc.",status:"Past Client",city:"Denver",state:"CO",ttmGross:0,ttmMfg:0,description:"Leading kidney care provider operating 2,700+ dialysis centers in the US. Fortune 500 company (DVA).",industry:"Healthcare",revenue:"~$12B",employees:"~70,000",directMail:"possible",dmLevel:"possible",quadFit:"Healthcare providers use direct mail for patient acquisition, health education, and facility awareness. DaVita's massive footprint creates volume opportunity if regulations allow.",product:"At-Home Connect",caseStudy:"InnovAge",priority:4},
+{name:"Deckers Outdoor Corporation",status:"Past Client",city:"Goleta",state:"CA",ttmGross:0,ttmMfg:0,description:"Parent company of UGG, HOKA, Teva, and Sanuk footwear brands. Publicly traded (DECK).",industry:"Retail / Footwear",revenue:"~$4B",employees:"~5,000",directMail:"likely",dmLevel:"likely",quadFit:"Multi-brand retail powerhouse with massive consumer reach. Direct mail for seasonal catalogs, brand launches, loyalty programs, and driving DTC e-commerce. Huge win-back opportunity.",product:"MergedMail",caseStudy:"DTC Portfolio",priority:5},
+{name:"Eargo Inc.",status:"Potential Client",city:"Mountain View",state:"CA",ttmGross:0,ttmMfg:0,description:"DTC hearing aid company offering FDA-cleared, virtually invisible hearing devices sold directly to consumers.",industry:"Healthcare / DTC",revenue:"~$50M",employees:"~200",directMail:"likely",dmLevel:"likely",quadFit:"DTC hearing aid companies mail heavily to older demographics who respond well to direct mail. Data-driven targeting of age 55+ consumers is highly effective.",product:"MergedMail",caseStudy:"InnovAge",priority:4},
+{name:"Empower Annuity Insurance Company of America",status:"Past Client",city:"Overland Park",state:"KS",ttmGross:0,ttmMfg:0,description:"One of the largest retirement services companies in the US, serving 17M+ participants. Subsidiary of Great-West Lifeco.",industry:"Financial Services / Retirement",revenue:"~$4B",employees:"~17,000",directMail:"likely",dmLevel:"likely",quadFit:"Retirement and insurance companies are huge direct mail users for plan enrollment, beneficiary updates, and regulatory communications. Major win-back opportunity.",product:"MergedMail",caseStudy:"PEMCO Insurance",priority:5},
+{name:"Exclusive Resorts LLC",status:"Potential Client",city:"Denver",state:"CO",ttmGross:0,ttmMfg:0,description:"Luxury destination club offering members access to high-end vacation residences worldwide.",industry:"Travel / Luxury",revenue:"~$100M",employees:"~200",directMail:"likely",dmLevel:"likely",quadFit:"Luxury travel brands targeting ultra-high-net-worth individuals rely on premium direct mail — thick stock invitations, personalized offers, and aspirational brand pieces.",product:"Creative/Betty",caseStudy:"Christie's Intl Real Estate",priority:4},
+{name:"Expedia Group Inc.",status:"Potential Client",city:"Seattle",state:"WA",ttmGross:0,ttmMfg:0,description:"Global online travel company operating Expedia, Hotels.com, Vrbo, Orbitz, and other travel brands.",industry:"Travel / Technology",revenue:"~$13B",employees:"~17,000",directMail:"possible",dmLevel:"possible",quadFit:"While primarily digital, Expedia's loyalty program and brand portfolio could leverage direct mail for high-value member engagement and win-back campaigns.",product:"JourneyMail",caseStudy:"Oklahoma Today",priority:3},
+{name:"Ezee Fiber Texas LLC",status:"Potential Client",city:"Houston",state:"TX",ttmGross:0,ttmMfg:0,description:"Texas-based fiber internet startup providing high-speed residential broadband in the Houston metro area.",industry:"Telecom / ISP",revenue:"~$30M",employees:"~100",directMail:"likely",dmLevel:"likely",quadFit:"Fiber startups mail aggressively into lit neighborhoods to convert subscribers. Hyper-local targeting is essential — direct mail is their top acquisition channel.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:4},
+{name:"First Montana Bank Inc.",status:"Potential Client",city:"Missoula",state:"MT",ttmGross:0,ttmMfg:0,description:"Community bank serving Montana with personal, business, and mortgage banking services.",industry:"Financial Services / Banking",revenue:"~$50M",employees:"~200",directMail:"likely",dmLevel:"likely",quadFit:"Community banks rely on direct mail for local customer acquisition, CD rate promotions, and home equity offers. Steady if modest volume.",product:"MergedMail",caseStudy:"Kasasa",priority:3},
+{name:"First Savings Financial Group Inc.",status:"Potential Client",city:"Jeffersonville",state:"IN",ttmGross:0,ttmMfg:0,description:"Holding company for First Savings Bank, a community bank serving Indiana and Kentucky.",industry:"Financial Services / Banking",revenue:"~$100M",employees:"~400",directMail:"likely",dmLevel:"likely",quadFit:"Community bank holding company with opportunity for direct mail across branch markets for deposit products, loans, and new market expansion.",product:"MergedMail",caseStudy:"Kasasa",priority:3},
+{name:"General Motors Financial Company Inc.",status:"Potential Client",city:"Fort Worth",state:"TX",ttmGross:0,ttmMfg:0,description:"Captive auto finance subsidiary of General Motors, one of the largest auto lenders in the US.",industry:"Financial Services / Auto Finance",revenue:"~$15B",employees:"~8,000",directMail:"likely",dmLevel:"likely",quadFit:"Auto finance companies use massive direct mail volumes for pre-approved loan offers, refinance campaigns, and lease maturity notices. Enterprise-scale opportunity.",product:"MergedMail",caseStudy:"Avant",priority:5},
+{name:"Global Federal Credit Union",status:"Potential Client",city:"Anchorage",state:"AK",ttmGross:0,ttmMfg:0,description:"Credit union serving US military and Department of Defense personnel worldwide.",industry:"Financial Services",revenue:"~$200M (assets)",employees:"~200",directMail:"likely",dmLevel:"likely",quadFit:"Military credit unions use direct mail to reach service members at bases worldwide. Niche but loyal audience with consistent mailing needs.",product:"MergedMail",caseStudy:"Kasasa",priority:3},
+{name:"GoPro Inc.",status:"Potential Client",city:"San Mateo",state:"CA",ttmGross:0,ttmMfg:0,description:"Consumer electronics company known for action cameras and accessories. Publicly traded (GPRO).",industry:"Consumer Electronics",revenue:"~$1B",employees:"~1,500",directMail:"possible",dmLevel:"possible",quadFit:"Consumer electronics brands can use direct mail for holiday promotions, product launch announcements, and subscriber/GoPro Plus retention campaigns.",product:"MergedMail",caseStudy:"DTC Portfolio",priority:3},
+{name:"Greenlight Networks LLC",status:"Potential Client",city:"Rochester",state:"NY",ttmGross:0,ttmMfg:0,description:"Fiber internet provider in the Rochester and Buffalo, NY metro areas offering residential broadband.",industry:"Telecom / ISP",revenue:"~$50M",employees:"~200",directMail:"likely",dmLevel:"likely",quadFit:"Fiber ISPs mail aggressively into newly serviceable neighborhoods. Greenlight's market expansion in NY creates ongoing direct mail demand for subscriber acquisition.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:4},
+{name:"Guiry's Inc",status:"Potential Client",city:"Denver",state:"CO",ttmGross:0,ttmMfg:0,description:"Denver's oldest paint and decorating store, family-owned since 1899. Sells paint, wallcovering, and art supplies.",industry:"Retail / Home Improvement",revenue:"~$15M",employees:"~80",directMail:"possible",dmLevel:"possible",quadFit:"Local retail institution that could benefit from seasonal direct mail promotions and loyalty mailings to their customer base in the Denver metro.",product:"At-Home Connect",caseStudy:"Plow & Hearth",priority:2},
+{name:"iMerge LLC",status:"Potential Client",city:"Carlsbad",state:"CA",ttmGross:0,ttmMfg:0,description:"M&A advisory firm specializing in selling software and technology companies.",industry:"Professional Services",revenue:"~$10M",employees:"~30",directMail:"unlikely",dmLevel:"unlikely",quadFit:"Niche B2B advisory firm — limited direct mail applicability. Possible ABM-style high-end mailers to tech company founders.",product:"Creative/Betty",caseStudy:"Intuit QuickBooks",priority:1},
+{name:"Import Packaging JV LLP",status:"Potential Client",city:"River Edge",state:"NJ",ttmGross:0,ttmMfg:0,description:"Packaging solutions company providing custom packaging for consumer products.",industry:"Manufacturing / Packaging",revenue:"~$20M",employees:"~50",directMail:"unlikely",dmLevel:"unlikely",quadFit:"B2B packaging company with limited direct mail use case. Low priority unless they serve CPG clients who need mail-integrated packaging.",product:"Creative/Betty",caseStudy:"DTC Portfolio",priority:1},
+{name:"Inspirato LLC",status:"Potential Client",city:"Denver",state:"CO",ttmGross:0,ttmMfg:0,description:"Luxury travel subscription company offering curated vacation experiences at high-end residences and hotels. Publicly traded (ISPO).",industry:"Travel / Luxury",revenue:"~$300M",employees:"~1,400",directMail:"likely",dmLevel:"likely",quadFit:"Luxury travel subscription targeting affluent consumers is perfectly suited for premium direct mail — beautiful creative, personalized offers, membership renewals.",product:"Creative/Betty",caseStudy:"Christie's Intl Real Estate",priority:4},
+{name:"Janus Henderson Investors",status:"Past Client",city:"Denver",state:"CO",ttmGross:0,ttmMfg:0,description:"Global asset management firm managing $350B+ in assets. Publicly traded (JHG).",industry:"Financial Services / Asset Management",revenue:"~$2B",employees:"~2,000",directMail:"likely",dmLevel:"likely",quadFit:"Asset managers use direct mail for investor communications, prospectus delivery, fund marketing, and advisor engagement. Regulatory mail requirements create steady volume.",product:"MergedMail",caseStudy:"PEMCO Insurance",priority:4},
+{name:"John M. Floyd and Associates Inc.",status:"Potential Client",city:"Houston",state:"TX",ttmGross:0,ttmMfg:0,description:"Financial institution consulting firm specializing in overdraft and fee income optimization for banks and credit unions.",industry:"Financial Consulting",revenue:"~$30M",employees:"~100",directMail:"possible",dmLevel:"possible",quadFit:"Consulting firms serving banks could become a channel partner — their bank clients need direct mail. Potential referral or co-marketing opportunity.",product:"MergedMail",caseStudy:"Kasasa",priority:2},
+{name:"Keen Inc",status:"Potential Client",city:"Portland",state:"OR",ttmGross:0,ttmMfg:0,description:"Outdoor footwear and accessories brand known for sandals and hiking shoes. B-Corp certified.",industry:"Retail / Footwear",revenue:"~$500M",employees:"~1,000",directMail:"possible",dmLevel:"possible",quadFit:"Outdoor lifestyle brand with loyal customer base ideal for seasonal catalog mailings, new product launches, and loyalty program communications.",product:"MergedMail",caseStudy:"DTC Portfolio",priority:3},
+{name:"Koia",status:"Potential Client",city:"Los Angeles",state:"CA",ttmGross:0,ttmMfg:0,description:"Plant-based protein drink brand available at major retailers. Growing better-for-you beverage brand.",industry:"CPG / Beverage",revenue:"~$30M",employees:"~50",directMail:"possible",dmLevel:"possible",quadFit:"Growing CPG brand that could use direct mail for couponing, sampling campaigns, and driving trial at retail locations.",product:"At-Home Connect",caseStudy:"Holy City Brewing",priority:2},
+{name:"Kruszyna Baugher Partners LLC",status:"Potential Client",city:"Harrisonburg",state:"VA",ttmGross:0,ttmMfg:0,description:"Regional professional services/consulting firm based in Virginia.",industry:"Professional Services",revenue:"~$5M",employees:"~20",directMail:"unlikely",dmLevel:"unlikely",quadFit:"Small professional services firm with minimal direct mail needs. Very low volume potential.",product:"Creative/Betty",caseStudy:"Intuit QuickBooks",priority:1},
+{name:"Lancer Skincare LLC",status:"Potential Client",city:"Beverly Hills",state:"CA",ttmGross:0,ttmMfg:0,description:"Luxury skincare brand by dermatologist Dr. Harold Lancer, sold at Nordstrom, Sephora, and DTC.",industry:"Beauty / Skincare",revenue:"~$30M",employees:"~50",directMail:"possible",dmLevel:"possible",quadFit:"Premium skincare brand with affluent customer base perfect for high-end direct mail — VIP offers, product launches, and seasonal promotions with beautiful creative.",product:"Creative/Betty",caseStudy:"Mostly Made",priority:3},
+{name:"Legacy Restoration LLC",status:"Potential Client",city:"Plymouth",state:"MN",ttmGross:0,ttmMfg:0,description:"Minnesota-based exterior restoration company specializing in roofing, siding, windows, and storm damage repair.",industry:"Home Services",revenue:"~$50M",employees:"~200",directMail:"likely",dmLevel:"likely",quadFit:"Home services companies, especially storm restoration, use direct mail for geographic targeting after weather events and for general local market acquisition.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:3},
+{name:"LendingPoint LLC",status:"Potential Client",city:"Kennesaw",state:"GA",ttmGross:0,ttmMfg:0,description:"Fintech personal lending platform targeting near-prime consumers with online personal loans.",industry:"Financial Services / Fintech",revenue:"~$300M",employees:"~500",directMail:"likely",dmLevel:"likely",quadFit:"Personal lending fintechs are heavy direct mail users, sending pre-approved offers to targeted consumer segments. Data-driven mail is a primary acquisition channel.",product:"MergedMail",caseStudy:"Avant",priority:4},
+{name:"LinkSoul Inc.",status:"Past Client",city:"Oceanside",state:"CA",ttmGross:0,ttmMfg:0,description:"Lifestyle golf apparel brand blending surf and golf culture. DTC and wholesale distribution.",industry:"Retail / Apparel",revenue:"~$10M",employees:"~30",directMail:"possible",dmLevel:"possible",quadFit:"Niche DTC apparel brand that could use direct mail for seasonal lookbooks and customer reactivation. Small volume potential.",product:"MergedMail",caseStudy:"DTC Portfolio",priority:2},
+{name:"Lively Inc.",status:"Potential Client",city:"San Francisco",state:"CA",ttmGross:0,ttmMfg:0,description:"HSA (Health Savings Account) administrator offering modern digital-first health benefits management.",industry:"Financial Services / Health Benefits",revenue:"~$50M",employees:"~150",directMail:"possible",dmLevel:"possible",quadFit:"HSA providers mail enrollment guides, debit cards, and benefits information to account holders. Regulatory and transactional mail creates steady volume.",product:"MergedMail",caseStudy:"PEMCO Insurance",priority:3},
+{name:"LXE Hearing",status:"Potential Client",city:"Boston",state:"MA",ttmGross:0,ttmMfg:0,description:"Direct-to-consumer hearing aid brand offering premium hearing devices at accessible price points.",industry:"Healthcare / DTC",revenue:"~$10M",employees:"~30",directMail:"likely",dmLevel:"likely",quadFit:"DTC hearing aids target older demographics who are highly responsive to direct mail. Pre-screened age-targeted mailings drive strong conversion.",product:"MergedMail",caseStudy:"InnovAge",priority:3},
+{name:"Mainscape Inc.",status:"Potential Client",city:"Fishers",state:"IN",ttmGross:0,ttmMfg:0,description:"Commercial landscaping and grounds management company serving properties across the US.",industry:"Commercial Services",revenue:"~$100M",employees:"~1,500",directMail:"unlikely",dmLevel:"unlikely",quadFit:"Primarily B2B commercial services with limited consumer direct mail need. Could use some B2B targeted mail for property manager acquisition.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:1},
+{name:"Marketing Mail Management Solutions",status:"Potential Client",city:"Aldie",state:"VA",ttmGross:0,ttmMfg:0,description:"Mail management consulting firm helping organizations optimize their direct mail operations.",industry:"Marketing Services",revenue:"~$5M",employees:"~20",directMail:"likely",dmLevel:"likely",quadFit:"As a mail management consultant, MMMS could be a channel partner or referral source for Quad's mail production services. Strategic relationship opportunity.",product:"MergedMail",caseStudy:"American Lung Association",priority:2},
+{name:"Massey Services Inc",status:"Potential Client",city:"Orlando",state:"FL",ttmGross:0,ttmMfg:0,description:"Florida's largest independently-owned pest prevention, lawn care, and termite protection company.",industry:"Home Services",revenue:"~$300M",employees:"~2,500",directMail:"likely",dmLevel:"likely",quadFit:"Regional home services companies use direct mail heavily for seasonal promotions, new mover targeting, and geographic expansion campaigns.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:4},
+{name:"NBH Bank",status:"Potential Client",city:"Greenwood Village",state:"CO",ttmGross:0,ttmMfg:0,description:"Community bank subsidiary of National Western Financial (now part of Heartland BancCorp/NBH), operating in Colorado, Kansas, Texas, and New Mexico.",industry:"Financial Services / Banking",revenue:"~$200M",employees:"~700",directMail:"likely",dmLevel:"likely",quadFit:"Multi-state community bank with direct mail needs for deposit products, loan offers, and new market entry across their branch footprint.",product:"MergedMail",caseStudy:"Kasasa",priority:3},
+{name:"O.K.I Furniture Fair LLC",status:"Potential Client",city:"Fairfield",state:"OH",ttmGross:0,ttmMfg:0,description:"Regional furniture and mattress retailer serving the Ohio, Kentucky, and Indiana tri-state area.",industry:"Retail / Furniture",revenue:"~$50M",employees:"~200",directMail:"likely",dmLevel:"likely",quadFit:"Regional furniture retailer that likely uses weekly/monthly promotional mailers and seasonal catalogs to drive showroom traffic.",product:"In-Store Connect",caseStudy:"At Home",priority:3},
+{name:"Osaic Inc",status:"Past Client",city:"New York",state:"NY",ttmGross:0,ttmMfg:0,description:"One of the largest networks of independent financial advisors in the US (formerly Advisor Group). Manages ~$500B in assets.",industry:"Financial Services / Wealth Management",revenue:"~$3B",employees:"~7,000",directMail:"likely",dmLevel:"likely",quadFit:"Large wealth management network needing mail for advisor marketing support, client communications, and regulatory mailings across thousands of advisor offices.",product:"MergedMail",caseStudy:"PEMCO Insurance",priority:5},
+{name:"Patriot Mobile LLC",status:"Potential Client",city:"Grapevine",state:"TX",ttmGross:0,ttmMfg:0,description:"Conservative Christian-values MVNO (mobile virtual network operator) donating to conservative causes.",industry:"Telecom / MVNO",revenue:"~$100M",employees:"~200",directMail:"likely",dmLevel:"likely",quadFit:"Values-aligned MVNOs use direct mail to target ideologically sympathetic demographics. Highly targeted mail campaigns to conservative mailing lists.",product:"At-Home Connect",caseStudy:"PureTalk Holdings Inc",priority:4},
+{name:"Publicis USA Production Solutions Inc",status:"Potential Client",city:"Chicago",state:"IL",ttmGross:0,ttmMfg:0,description:"Production arm of Publicis Groupe, one of the world's largest advertising holding companies.",industry:"Advertising / Agency",revenue:"~$3B (US)",employees:"~15,000 (US)",directMail:"likely",dmLevel:"likely",quadFit:"Major ad agency that buys print and mail production on behalf of Fortune 500 clients. A relationship here unlocks access to their entire client portfolio.",product:"Creative/Betty",caseStudy:"Intuit QuickBooks",priority:4},
+{name:"PureTalk Holdings Inc",status:"Client",city:"Covington",state:"GA",ttmGross:24692,ttmMfg:24692,description:"MVNO wireless carrier offering affordable phone plans on AT&T's network, targeting value-conscious consumers.",industry:"Telecom / MVNO",revenue:"~$200M",employees:"~300",directMail:"likely",dmLevel:"likely",quadFit:"Top-producing current client. MVNOs use direct mail extensively for subscriber acquisition targeting specific demographics. Protect and grow this relationship.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:3},
+{name:"Radisys Corporation",status:"Potential Client",city:"Beaverton",state:"OR",ttmGross:0,ttmMfg:0,description:"Subsidiary of Reliance Jio, providing telecom software and open network solutions for service providers.",industry:"Technology / Telecom",revenue:"~$100M",employees:"~500",directMail:"unlikely",dmLevel:"unlikely",quadFit:"B2B telecom infrastructure company with minimal consumer direct mail needs. Very low priority.",product:"Creative/Betty",caseStudy:"Intuit QuickBooks",priority:1},
+{name:"Resident Home LLC",status:"Potential Client",city:"Jeffersonville",state:"IN",ttmGross:0,ttmMfg:0,description:"DTC mattress and home goods company operating brands like Nectar, DreamCloud, Awara, and Level Sleep.",industry:"E-Commerce / Home Goods",revenue:"~$500M",employees:"~500",directMail:"likely",dmLevel:"likely",quadFit:"Major DTC mattress brand that can leverage direct mail for customer acquisition, retargeting, and brand awareness. High volume potential in a competitive DTC category.",product:"MergedMail",caseStudy:"DTC Portfolio",priority:5},
+{name:"Ryan Lawn & Tree Inc.",status:"Potential Client",city:"Merriam",state:"KS",ttmGross:0,ttmMfg:0,description:"Kansas City-area lawn care and tree service company providing residential and commercial landscaping.",industry:"Home Services",revenue:"~$50M",employees:"~400",directMail:"likely",dmLevel:"likely",quadFit:"Lawn care companies use seasonal direct mail for spring campaigns, new customer offers, and geographic targeting of homeowners in their service areas.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:3},
+{name:"Sail Internet Inc.",status:"Potential Client",city:"Palo Alto",state:"CA",ttmGross:0,ttmMfg:0,description:"Fixed wireless internet provider offering high-speed broadband in the San Francisco Bay Area.",industry:"Telecom / ISP",revenue:"~$20M",employees:"~50",directMail:"likely",dmLevel:"likely",quadFit:"Local ISPs mail into service areas to acquire subscribers. Sail's Bay Area coverage means higher per-piece costs but affluent demographic.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:3},
+{name:"Sonic Telecom LLC",status:"Potential Client",city:"Santa Rosa",state:"CA",ttmGross:0,ttmMfg:0,description:"Independent telecom providing fiber internet, phone, and broadband in Northern California.",industry:"Telecom / ISP",revenue:"~$100M",employees:"~500",directMail:"likely",dmLevel:"likely",quadFit:"Expanding fiber ISP mailing into new service areas for subscriber acquisition. Proven direct mail model for ISP customer acquisition.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:4},
+{name:"SpecSeats Intl Corp.",status:"Potential Client",city:"East Rancho Dominguez",state:"CA",ttmGross:0,ttmMfg:0,description:"Specialty seating manufacturer producing custom theater, auditorium, and arena seating solutions.",industry:"Manufacturing",revenue:"~$10M",employees:"~50",directMail:"unlikely",dmLevel:"unlikely",quadFit:"Niche B2B manufacturer with limited direct mail applicability. Very low volume potential.",product:"Creative/Betty",caseStudy:"At Home",priority:1},
+{name:"Surf Inc.",status:"Client",city:"Marina Del Rey",state:"CA",ttmGross:5722,ttmMfg:25951,description:"Internet service provider offering broadband and connectivity solutions in Southern California.",industry:"Telecom / ISP",revenue:"~$50M",employees:"~150",directMail:"likely",dmLevel:"likely",quadFit:"Active producing client. ISPs are heavy mailers for subscriber acquisition. Focus on growing share-of-wallet and expanding campaign scope.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:3},
+{name:"Tachus LLC",status:"Potential Client",city:"The Woodlands",state:"TX",ttmGross:0,ttmMfg:0,description:"Fast-growing fiber internet provider in the Houston, TX metro area. Expanding coverage rapidly.",industry:"Telecom / ISP",revenue:"~$50M",employees:"~300",directMail:"likely",dmLevel:"likely",quadFit:"Rapidly expanding fiber ISP that mails heavily into newly lit neighborhoods. Growing territory = growing mail volume. High-fit prospect.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:4},
+{name:"The Tile Shop Inc",status:"Potential Client",city:"Plymouth",state:"MN",ttmGross:0,ttmMfg:0,description:"Specialty tile retailer operating 140+ stores nationwide selling natural stone and man-made tile products.",industry:"Retail / Home Improvement",revenue:"~$300M",employees:"~2,000",directMail:"likely",dmLevel:"likely",quadFit:"Specialty retailer with national footprint needing local market promotion, seasonal sales events, and new homeowner targeting via direct mail.",product:"In-Store Connect",caseStudy:"At Home",priority:4},
+{name:"Three Day Rule Inc.",status:"Potential Client",city:"Los Angeles",state:"CA",ttmGross:0,ttmMfg:0,description:"Matchmaking and dating service offering personalized introductions for professionals.",industry:"Personal Services",revenue:"~$5M",employees:"~30",directMail:"possible",dmLevel:"possible",quadFit:"Niche dating service that could use premium direct mail to reach affluent singles. Low volume but high creative potential.",product:"Creative/Betty",caseStudy:"Christie's Intl Real Estate",priority:1},
+{name:"Thule Inc.",status:"Past Client",city:"Seymour",state:"CT",ttmGross:0,ttmMfg:0,description:"Global outdoor and transportation brand making roof racks, bike carriers, luggage, and strollers. Swedish parent company.",industry:"Consumer Products / Outdoor",revenue:"~$800M (US)",employees:"~1,000 (US)",directMail:"possible",dmLevel:"possible",quadFit:"Premium outdoor brand with opportunity for seasonal catalogs, product launch mailings, and dealer/retailer communications. Win-back with right creative approach.",product:"MergedMail",caseStudy:"DTC Portfolio",priority:3},
+{name:"Ting Fiber LLC",status:"Client",city:"Centennial",state:"CO",ttmGross:0,ttmMfg:0,description:"Fiber internet provider owned by Tucows, offering gigabit service in select US and Canadian markets.",industry:"Telecom / ISP",revenue:"~$40M",employees:"~200",directMail:"likely",dmLevel:"likely",quadFit:"Fiber ISP expanding into new markets needs ongoing direct mail for subscriber acquisition. Already a client — opportunity to activate or grow.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:3},
+{name:"Transamerica",status:"Past Client",city:"Cedar Rapids",state:"IA",ttmGross:0,ttmMfg:0,description:"Major insurance and financial services company offering life insurance, retirement plans, and investment products. Part of Aegon.",industry:"Financial Services / Insurance",revenue:"~$10B",employees:"~7,000",directMail:"likely",dmLevel:"likely",quadFit:"Large insurance/financial services company with massive transactional and promotional mail volumes. Huge win-back opportunity — regulatory mail alone is significant.",product:"MergedMail",caseStudy:"PEMCO Insurance",priority:5},
+{name:"Travis Credit Union",status:"Potential Client",city:"Vacaville",state:"CA",ttmGross:0,ttmMfg:0,description:"California credit union serving 200K+ members with full banking services.",industry:"Financial Services",revenue:"~$200M (assets ~$4B)",employees:"~700",directMail:"likely",dmLevel:"likely",quadFit:"Mid-size credit union with strong member base ideal for direct mail campaigns promoting loans, credit cards, and member acquisition.",product:"MergedMail",caseStudy:"Kasasa",priority:4},
+{name:"TVG Production Corporation",status:"Potential Client",city:"Essex Junction",state:"VT",ttmGross:0,ttmMfg:0,description:"Vermont-based production company. May be related to media/entertainment production.",industry:"Media / Production",revenue:"~$10M",employees:"~30",directMail:"unlikely",dmLevel:"unlikely",quadFit:"Small production company with unclear direct mail needs. Low priority unless they serve clients with mail requirements.",product:"Creative/Betty",caseStudy:"Oklahoma Today",priority:1},
+{name:"United Financial Network Inc",status:"Potential Client",city:"New York City",state:"NY",ttmGross:0,ttmMfg:0,description:"Financial services network providing tools and support for independent financial advisors.",industry:"Financial Services",revenue:"~$50M",employees:"~100",directMail:"possible",dmLevel:"possible",quadFit:"Financial advisor networks can use direct mail for advisor recruiting and supporting their advisors' client acquisition campaigns.",product:"MergedMail",caseStudy:"PEMCO Insurance",priority:2},
+{name:"VeraBank Inc.",status:"Potential Client",city:"Henderson",state:"TX",ttmGross:0,ttmMfg:0,description:"Texas community bank with branches across East Texas providing personal and commercial banking.",industry:"Financial Services / Banking",revenue:"~$80M",employees:"~400",directMail:"likely",dmLevel:"likely",quadFit:"Community bank in underserved East Texas market using direct mail for deposit products, loans, and local community engagement.",product:"MergedMail",caseStudy:"Kasasa",priority:3},
+{name:"Visit Truckee",status:"Potential Client",city:"Truckee",state:"CA",ttmGross:0,ttmMfg:0,description:"Tourism board promoting Truckee, California as a vacation destination near Lake Tahoe.",industry:"Travel / Tourism",revenue:"~$3M (budget)",employees:"~15",directMail:"possible",dmLevel:"possible",quadFit:"Destination marketing organizations use direct mail for visitor guides, seasonal campaign mailers, and event promotions to targeted geographic audiences.",product:"Creative/Betty",caseStudy:"Oklahoma Today",priority:2},
+{name:"VyStar Credit Union",status:"Potential Client",city:"Jacksonville",state:"FL",ttmGross:0,ttmMfg:0,description:"One of the largest credit unions in the US with $13B+ in assets and 900K+ members in Florida and Georgia.",industry:"Financial Services",revenue:"~$600M",employees:"~2,500",directMail:"likely",dmLevel:"likely",quadFit:"Top-20 US credit union with massive member base and multi-state footprint. Direct mail for member acquisition, cross-sell, and product promotion at scale.",product:"MergedMail",caseStudy:"Kasasa",priority:5},
+{name:"Vyve Broadband Investments LLC",status:"Potential Client",city:"Shawnee",state:"OK",ttmGross:0,ttmMfg:0,description:"Rural broadband provider offering internet, TV, and phone service in smaller markets across 16 states.",industry:"Telecom / ISP",revenue:"~$200M",employees:"~800",directMail:"likely",dmLevel:"likely",quadFit:"Rural broadband providers mail aggressively to acquire subscribers in underserved markets. Multi-state footprint means scalable direct mail campaigns.",product:"At-Home Connect",caseStudy:"Stanley Steemer",priority:4},
+{name:"Wealth Enhancement Group LLC",status:"Potential Client",city:"Plymouth",state:"MN",ttmGross:0,ttmMfg:0,description:"One of the largest independent RIA firms in the US with $80B+ in AUM, growing through acquisitions.",industry:"Financial Services / Wealth Management",revenue:"~$800M",employees:"~1,500",directMail:"likely",dmLevel:"likely",quadFit:"Large RIA network that can use direct mail for client acquisition, seminar invitations, and advisor marketing across their national network of offices.",product:"MergedMail",caseStudy:"PEMCO Insurance",priority:4},
+{name:"Xcel Energy Inc",status:"Potential Client",city:"Denver",state:"CO",ttmGross:0,ttmMfg:0,description:"Major regulated utility providing electricity and natural gas to 3.7M customers across 8 states. Publicly traded (XEL).",industry:"Energy / Utilities",revenue:"~$15B",employees:"~12,000",directMail:"likely",dmLevel:"likely",quadFit:"Utilities mail millions of pieces annually — billing, regulatory notices, energy efficiency programs, rate change notices, and promotional campaigns.",product:"MergedMail",caseStudy:"American Lung Association",priority:5}
+];
+
+// Computed fields
+const industries = [...new Set(ACCOUNTS.map(a=>a.industry))].sort();
+let currentView = 'card';
+let expandedId = null;
+
+function init(){
+  // Populate industry filter
+  const sel = document.getElementById('filterIndustry');
+  sel.innerHTML = '<option value="all">All Industries</option>' + industries.map(i=>`<option value="${i}">${i}</option>`).join('');
+  renderDashboard();
+  renderAccounts();
+}
+
+function renderDashboard(){
+  const total = ACCOUNTS.length;
+  const clients = ACCOUNTS.filter(a=>a.status==='Client').length;
+  const prospects = ACCOUNTS.filter(a=>a.status==='Potential Client').length;
+  const past = ACCOUNTS.filter(a=>a.status==='Past Client').length;
+  const p5 = ACCOUNTS.filter(a=>a.priority===5).length;
+  const p4 = ACCOUNTS.filter(a=>a.priority===4).length;
+  const p3 = ACCOUNTS.filter(a=>a.priority===3).length;
+  // Pipeline totals from Top Opps
+  let pipeRev=0,pipeReach=0;
+  TOP_OPPS.forEach(o=>{const r=parseInt((o.rev||'').replace(/[^0-9]/g,''))||0;const rc=parseInt((o.reach||'').replace(/[^0-9]/g,''))||0;pipeRev+=r;pipeReach+=rc;});
+  document.getElementById('dashboard').innerHTML = `
+    <div class="stat-card cyan"><div class="stat-label">Total Accounts</div><div class="stat-value cyan">${total}</div><div class="stat-sub">${clients} active · ${prospects} prospects · ${past} win-back</div></div>
+    <div class="stat-card green"><div class="stat-label">Pipeline Revenue</div><div class="stat-value green">$${pipeRev.toLocaleString()}</div><div class="stat-sub">Top Opportunities only</div></div>
+    <div class="stat-card yellow"><div class="stat-label">Pipeline Reach</div><div class="stat-value yellow">$${pipeReach.toLocaleString()}</div><div class="stat-sub">2026 total reach · Top Opps</div></div>
+    <div class="stat-card red"><div class="stat-label">High Priority (4-5)</div><div class="stat-value red">${p5+p4}</div><div class="stat-sub">${p5} critical · ${p4} high · ${p3} moderate</div></div>
+  `;
+}
+
+function getFiltered(){
+  const status = document.getElementById('filterStatus').value;
+  const industry = document.getElementById('filterIndustry').value;
+  const priority = document.getElementById('filterPriority').value;
+  const search = document.getElementById('searchBox').value.toLowerCase();
+  const sort = document.getElementById('sortBy').value;
+  let list = ACCOUNTS.filter(a=>{
+    if(status!=='all' && a.status!==status) return false;
+    if(industry!=='all' && a.industry!==industry) return false;
+    if(priority!=='all' && a.priority!==parseInt(priority)) return false;
+    if(search && !a.name.toLowerCase().includes(search) && !a.city.toLowerCase().includes(search) && !a.state.toLowerCase().includes(search) && !a.industry.toLowerCase().includes(search)) return false;
+    return true;
+  });
+  const [field,dir] = sort.split('-');
+  list.sort((a,b)=>{
+    let va,vb;
+    if(field==='priority'){va=a.priority;vb=b.priority}
+    else if(field==='name'){va=a.name;vb=b.name;return dir==='asc'?va.localeCompare(vb):vb.localeCompare(va)}
+    else if(field==='ttm'){va=a.ttmGross;vb=b.ttmGross}
+    else if(field==='revenue'){va=parseInt(a.revenue.replace(/[^0-9]/g,''))||0;vb=parseInt(b.revenue.replace(/[^0-9]/g,''))||0}
+    return dir==='desc'?vb-va:va-vb;
+  });
+  return list;
+}
+
+function statusBadge(s){
+  if(s==='Client') return '<span class="status-badge active">Active</span>';
+  if(s==='Potential Client') return '<span class="status-badge prospect">Prospect</span>';
+  return '<span class="status-badge winback">Win-back</span>';
+}
+
+function stars(n){
+  return Array.from({length:5},(_, i)=>`<svg class="star ${i<n?'filled':''}" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`).join('');
+}
+
+function renderAccounts(){
+  const list = getFiltered();
+  document.getElementById('resultsCount').textContent = `Showing ${list.length} of ${ACCOUNTS.length} accounts`;
+  const grid = document.getElementById('accountsGrid');
+  grid.className = 'accounts-grid' + (currentView==='table'?' table-view':'');
+  grid.innerHTML = list.map((a,i)=>{
+    const exp = expandedId===a.name;
+    const logo=logoUrl(a.name);
+    const noteInd=hasNotes(a.name)?'has-notes':'';
+    const editInd=hasEdits(a.name)?'has-edits':'';
+    const ed=getAccountEdits(a.name);
+    const safeN=a.name.replace(/'/g,"&#39;").replace(/"/g,"&quot;");
+    const effPriority=ed.priority||a.priority;
+    const effStatus=ed.status||a.status;
+    return `<div class="account-card priority-${effPriority} ${noteInd} ${editInd}" data-acct="${safeN}" onclick="openAcctModal(this.dataset.acct)">
+      <div class="card-header">
+        <div class="card-header-left">${logo?`<img class="brand-logo" src="${logo}" onerror="this.classList.add('err')">`:''}<div><div class="company-name">${a.name}</div><div class="card-location">${ed.city||a.city}${(ed.state||a.state)?', '+(ed.state||a.state):''}</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px">${linkedinUrl(a.name)?'<a href="'+linkedinUrl(a.name)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--cyan);font-size:14px;text-decoration:none" title="LinkedIn">🔗</a>':''}${statusBadge(effStatus)}<div class="priority-stars">${stars(effPriority)}</div></div>
+      </div>
+      <div class="card-meta">
+        <span class="meta-tag industry">${a.industry}</span>
+        <span class="meta-tag revenue">${a.revenue}</span>
+        <span class="meta-tag employees">${a.employees}</span>
+        ${a.ttmGross>0?`<span class="meta-tag ttm">TTM: $${a.ttmGross.toLocaleString()}</span>`:''}
+      </div>
+      <div class="card-description">${a.description}</div>
+    </div>`;
+  }).join('');
+}
+
+function setView(v,btn){
+  currentView=v;
+  document.querySelectorAll('.view-toggle button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAccounts();
+}
+
+function exportCSV(){
+  const headers='Name,Status,City,State,Industry,Est Revenue,Employees,TTM Gross,TTM MFG,Priority,Direct Mail,Product,Case Study,Description,Quad Fit';
+  const rows=ACCOUNTS.map(a=>[a.name,a.status,a.city,a.state,a.industry,a.revenue,a.employees,a.ttmGross,a.ttmMfg||0,a.priority,a.dmLevel,a.product,a.caseStudy,'"'+a.description.replace(/"/g,'""')+'"','"'+a.quadFit.replace(/"/g,'""')+'"'].join(','));
+  navigator.clipboard.writeText(headers+'\n'+rows.join('\n'));
+  const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+const TOP_OPPS=[
+{name:"Lowe's",rev:"$300,000",reach:"$600,000",urgency:"now",urgLabel:"NOW",timeline:"EOW 2/13",growth:"Q1 2026 — Data, Creative, AMI",status:"Closed. Entry DM job awarded as initial test (2 creatives per HH). Intent to review DM provider long term.",action:"Execute this project flawlessly. Over-communicate results. Prepare post-test readout + expansion POV. Begin building outline of Lunch + Learn.",kpis:["Break Bread","Facility Visit","MSA Signed","Postal Analysis"]},
+{name:"PNC Bank",rev:"$1,000,000",reach:"$1,000,000",urgency:"active",urgLabel:"ACTIVE",timeline:"Q2 2026",growth:"AMI, Analytics",status:"Elena at PNC sharing deck from 2/10 with her team. Next step: dive deeper on topic they want to focus on.",action:"Waiting on reply from Elena on her team's feedback. Custom deck created for 2/10 call.",kpis:[]},
+{name:"SoFi (Lending/Investment DM)",rev:"$1,000,000",reach:"$1,000,000",urgency:"active",urgLabel:"ACTIVE",timeline:"Q2 2026",growth:"Creative, AMI",status:"Met with CEO's daughter for coffee 1/28. Quad overview + Finserv client questions. Custom deck (draft due Thursday) for her team. She will connect Emmett with head of Lending DM or Investment DM team. 2/17 Marisa's text.",action:"Follow up on Marisa's text. Await connection to Lending or Investment DM team lead.",kpis:[]},
+{name:"Bosch Tools",rev:"$750,000",reach:"$750,000",urgency:"reset",urgLabel:"RESET",timeline:"Q3 2026",growth:"Data, Analytics",status:"Prior meeting occurred; account went silent after Nate misstep. Heavy DM spender. Needs clean reset.",action:"Account Mapping. New owner intro. Re-open dialogue. Send second email through Salesforce to check opens.",kpis:[]},
+{name:"Corebridge",rev:"$400,000",reach:"$400,000",urgency:"active",urgLabel:"ACTIVE",timeline:"Q2-Q4 2026",growth:"AMI, Analytics",status:"2/16 credit approved — confirmed by client, awaiting next steps. True B2C DM-heavy business spun out of AIG. Prior Quad outreach misaligned to B2B team; correct buyer is B2C marketing org. Clean-slate opp.",action:"PRIORITY — Build account map to B2C marketing leadership. Introduce self as new owner with fresh POV.",kpis:[]},
+{name:"VeraBank (Dremel/Bosch)",rev:"$250,000",reach:"$500,000",urgency:"active",urgLabel:"ACTIVE",timeline:"Q1 2026",growth:"Data, Analytics",status:"Existing Quad relationship via Packaging (Closed Won, 3yr, $1.2MM ARR). Marketing team (Dremel brand) tested shared mail via Lowe's — underperformed due to audience quality + shared mail environment. Brand interested in reaching younger DIY audiences + complementing digital with offline.",action:"Follow up call week of 1/26 with Data team for Audience overview. Client owes targeting data.",kpis:[]},
+{name:"SoFi (Current)",rev:"$60,000",reach:"$100,000",urgency:"active",urgLabel:"ACTIVE",timeline:"Q1 2026",growth:"Creative, AMI",status:"Ongoing small client. Steve Addis working on digital targeting follow up.",action:"Continue nurturing. Support Steve Addis on digital targeting follow-up.",kpis:[]},
+{name:"Mattress Firm",rev:"$40,000",reach:"$40,000",urgency:"reengage",urgLabel:"RE-ENGAGE",timeline:"Q2-Q3 2026",growth:"Analytics",status:"Re-engage. Very low volume — cancelled call.",action:"Following up 2/18.",kpis:[]},
+{name:"First Savings Financial",rev:"—",reach:"—",urgency:"reengage",urgLabel:"RE-ENGAGE",timeline:"—",growth:"—",status:"Client asked for 6 months. Note to follow up on calendar.",action:"Open to prospect week of 2/16. Re-engage.",kpis:[]},
+{name:"Surf Dating",rev:"—",reach:"—",urgency:"reengage",urgLabel:"RE-ENGAGE",timeline:"—",growth:"—",status:"Re-engage.",action:"Re-engage outreach.",kpis:[]}
+];
+
+function renderTopOpps(){
+  document.getElementById('topOppsGrid').innerHTML=TOP_OPPS.map(o=>{const logo=logoUrl(o.name);return `
+    <div class="opp-card">
+      <div class="opp-header">
+        <div style="display:flex;align-items:center;gap:10px">${logo?`<img class="brand-logo" src="${logo}" onerror="this.classList.add('err')">`:''}<div class="opp-name">${o.name}</div></div>
+        <div class="opp-urgency ${o.urgency}">${o.urgLabel}</div>
+      </div>
+      <div class="opp-money">
+        <span><span class="label">Revenue</span><span class="val green">${o.rev}</span></span>
+        <span><span class="label">2026 Reach</span><span class="val cyan">${o.reach}</span></span>
+        <span><span class="label">Timeline</span><span class="val">${o.timeline}</span></span>
+      </div>
+      <div class="opp-status">${o.status}</div>
+      <div class="opp-action"><strong>Next Action:</strong> ${o.action}</div>
+      <div class="opp-meta">
+        <span class="tag">📈 ${o.growth}</span>
+      </div>
+      ${o.kpis.length?`<div class="opp-kpis">${o.kpis.map(k=>`<span class="kpi">✓ ${k}</span>`).join('')}</div>`:''}
+    </div>
+  `;}).join('');
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAcctModal();});
+init();renderTopOpps();
+</script>
+</body>
+</html>
